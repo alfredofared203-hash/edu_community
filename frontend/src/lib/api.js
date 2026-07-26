@@ -51,6 +51,16 @@ const api = {
 
   // ===== ترشيح المدرسين (v1) =====
   getRecommendedTeachers: (limit = 10) => request(`/v1/recommendations/teachers${qs({ limit })}`),
+<<<<<<< HEAD
+=======
+
+  // ===== المكافآت (v1) =====
+  getRewards: () => request("/v1/rewards"),
+  getMyRewards: () => request("/v1/rewards/my"),
+  grantReward: (userId, rewardId) => request(`/v1/rewards/grant`, { method: "POST", body: JSON.stringify({ userId, rewardId }) }),
+  revokeReward: (userId, rewardId) => request(`/v1/rewards/revoke`, { method: "POST", body: JSON.stringify({ userId, rewardId }) }),
+  getUsersWithRewards: () => request("/v1/rewards/users"),
+>>>>>>> 4802385 (alaa)
 };
 
 export {

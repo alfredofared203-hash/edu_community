@@ -22,6 +22,11 @@ import RoleHome from "./components/RoleHome";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import ChatPage from "./features/chat/ChatPage";
+<<<<<<< HEAD
+=======
+import RewardsPage from "./features/rewards/RewardsPage";
+import AdminRewardsPage from "./features/rewards/AdminRewardsPage";
+>>>>>>> 4802385 (alaa)
 
 const queryClient = new QueryClient();
 
@@ -53,6 +58,11 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><AppLayout><ChatPage /></AppLayout></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AppLayout><AdminDashboard /></AppLayout></ProtectedRoute>} />
+<<<<<<< HEAD
+=======
+            <Route path="/rewards" element={<ProtectedRoute roles={["student"]}><AppLayout><RewardsPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/admin/rewards" element={<ProtectedRoute roles={["admin"]}><AppLayout><AdminRewardsPage /></AppLayout></ProtectedRoute>} />
+>>>>>>> 4802385 (alaa)
 
             <Route path="*" element={<NotFound />} />
           </Routes>
