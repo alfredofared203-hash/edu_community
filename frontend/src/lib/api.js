@@ -18,52 +18,76 @@ const api = {
   createPost: (formData) => request("/posts", { method: "POST", body: formData }),
   likePost: (id) => request("/posts/" + id + "/like", { method: "POST" }),
   getComments: (id) => request("/posts/" + id + "/comments"),
-  createComment: (id, content) => request("/posts/" + id + "/comments", { method: "POST", body: JSON.stringify({ content }) }),
+  createComment: (id, content) =>
+    request("/posts/" + id + "/comments", {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    }),
 
   getChallenges: () => request("/challenges"),
   getSubmissions: () => request("/challenges/submissions"),
-  submitChallenge: (id, answer) => request("/challenges/" + id + "/submit", { method: "POST", body: JSON.stringify({ answer }) }),
+  submitChallenge: (id, answer) =>
+    request("/challenges/" + id + "/submit", {
+      method: "POST",
+      body: JSON.stringify({ answer }),
+    }),
 
-  getLeaderboard: (grade) => request("/leaderboard" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
+  getLeaderboard: (grade) =>
+    request("/leaderboard" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
   getSchools: () => request("/leaderboard/schools"),
 
   getTeachers: () => request("/teachers"),
-  rateTeacher: (id, rating, comment) => request("/teachers/" + id + "/rate", { method: "POST", body: JSON.stringify({ rating, comment }) }),
+  rateTeacher: (id, rating, comment) =>
+    request("/teachers/" + id + "/rate", {
+      method: "POST",
+      body: JSON.stringify({ rating, comment }),
+    }),
 
   getAdminStats: () => request("/admin/stats"),
   getAdminUsers: () => request("/admin/users"),
-  deleteUser: (userId) => request(`/admin/users/${userId}`, { method: "DELETE" }),
+  deleteUser: (userId) =>
+    request(`/admin/users/${userId}`, { method: "DELETE" }),
 
-  // ===== الشات (سجل الرسائل — اللحظي عبر Socket) =====
-  // الغرفة = الصف الدراسي (grade). الباك عنده GET /v1/chat/messages?grade=&page=&limit=
-  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`),
+  getRoomMessages: (grade, params = {}) =>
+    request(`/v1/chat/messages${qs({ grade, ...params })}`),
 
-  // ===== Soft Skills (v1) =====
   getSoftSkills: () => request("/v1/softskills"),
-  getSoftSkillSubmissions: (skillId) => request(`/v1/softskills/${skillId}/submissions`),
-  submitPresentation: (skillId, formData) => request(`/v1/softskills/${skillId}/submit`, { method: "POST", body: formData }),
-  gradeSubmission: (submissionId, data) => request(`/v1/softskills/submissions/${submissionId}/grade`, { method: "POST", body: JSON.stringify(data) }),
+  getSoftSkillSubmissions: (skillId) =>
+    request(`/v1/softskills/${skillId}/submissions`),
+  submitPresentation: (skillId, formData) =>
+    request(`/v1/softskills/${skillId}/submit`, {
+      method: "POST",
+      body: formData,
+    }),
+  gradeSubmission: (submissionId, data) =>
+    request(`/v1/softskills/submissions/${submissionId}/grade`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-  // ===== الإشعارات (v1) =====
   getNotifications: () => request("/v1/notifications"),
-  markNotificationRead: (id) => request(`/v1/notifications/${id}/read`, { method: "PATCH" }),
-  markAllNotificationsRead: () => request("/v1/notifications/read-all", { method: "PATCH" }),
+  markNotificationRead: (id) =>
+    request(`/v1/notifications/${id}/read`, { method: "PATCH" }),
+  markAllNotificationsRead: () =>
+    request("/v1/notifications/read-all", { method: "PATCH" }),
 
-  // ===== ترشيح المدرسين (v1) =====
-  getRecommendedTeachers: (limit = 10) => request(`/v1/recommendations/teachers${qs({ limit })}`),
-<<<<<<< HEAD
-=======
+  getRecommendedTeachers: (limit = 10) =>
+    request(`/v1/recommendations/teachers${qs({ limit })}`),
 
-  // ===== المكافآت (v1) =====
+  // ===== Rewards =====
   getRewards: () => request("/v1/rewards"),
   getMyRewards: () => request("/v1/rewards/my"),
-  grantReward: (userId, rewardId) => request(`/v1/rewards/grant`, { method: "POST", body: JSON.stringify({ userId, rewardId }) }),
-  revokeReward: (userId, rewardId) => request(`/v1/rewards/revoke`, { method: "POST", body: JSON.stringify({ userId, rewardId }) }),
+  grantReward: (userId, rewardId) =>
+    request("/v1/rewards/grant", {
+      method: "POST",
+      body: JSON.stringify({ userId, rewardId }),
+    }),
+  revokeReward: (userId, rewardId) =>
+    request("/v1/rewards/revoke", {
+      method: "POST",
+      body: JSON.stringify({ userId, rewardId }),
+    }),
   getUsersWithRewards: () => request("/v1/rewards/users"),
->>>>>>> 4802385 (alaa)
 };
 
-export {
-  api,
-  tokenStore
-};
+export { api, tokenStore };
