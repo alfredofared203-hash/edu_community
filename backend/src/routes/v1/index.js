@@ -9,5 +9,6 @@ router.use('/chat', require('./chat'));                    // سجل رسائل 
 router.use('/softskills', require('./softskill.routes'));  // المهارات الناعمة + التسليمات
 router.use('/notifications', require('./notification.routes')); // الإشعارات
 router.use('/recommendations', require('./recommendation.routes')); // ترشيح المدرسين
+router.use('/analytics', require('./analytics.routes'));  
 
 module.exports = router;
