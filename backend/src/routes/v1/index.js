@@ -6,7 +6,8 @@ const router = require('express').Router();
 
 router.use('/auth', require('../auth'));                    // نفس مسارات المصادقة متاحة تحت v1 كمان (للتجديد)
 router.use('/chat', require('./chat'));                    // سجل رسائل الشات (اللحظي في Socket)
-router.use('/softskills', require('./softskill.routes'));  // المهارات الناعمة + التسليمات
+router.use('/softskills', require('./softskill.routes'));
+router.use('/rewards',    require('./reward.routes'));  // المهارات الناعمة + التسليمات
 router.use('/notifications', require('./notification.routes')); // الإشعارات
 router.use('/recommendations', require('./recommendation.routes')); // ترشيح المدرسين
 

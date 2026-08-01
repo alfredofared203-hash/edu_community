@@ -10,6 +10,7 @@ const Subject = require('../models/Subject');
 const Material = require('../models/Material');
 const bcrypt = require('bcryptjs');
 const SoftSkill = require('../models/SoftSkill');
+const Reward = require('../models/Reward');
 
 const teachersData = [
     { name: 'أ. أحمد علي', email: 'ahmed.ali@edu.eg', role: 'teacher', grade: 'كل المراحل' },
@@ -75,6 +76,7 @@ async function seed() {
         await Subject.deleteMany({});
         await Material.deleteMany({});
         await SoftSkill.deleteMany({});
+    await Reward.deleteMany({});
         console.log('Database collections cleared');
 
         // نشفّر كلمة المرور مرة واحدة ونستخدمها لكل الحسابات التجريبية (password123)
@@ -212,6 +214,19 @@ async function seed() {
             { title: 'حل المشكلات', description: 'تطوير التفكير التحليلي والابتكاري لمواجهة التحديات بذكاء ومرونة.', icon: 'Lightbulb', color: 'indigo', coursesCount: 10, createdBy: admin._id },
         ]);
         console.log('Soft Skills seeded');
+
+        // Create Rewards
+        await Reward.insertMany([
+            { title: 'عبقري الرياضيات', description: 'تفوّق في تحديات الرياضيات', emoji: '🧮', cost: 0,    type: 'badge', requirement: 'مطلوب: حل 10 تحديات رياضيات', createdBy: admin._id },
+            { title: 'مشارك نشط',      description: 'ساهم بفاعلية في المجتمع',    emoji: '💬', cost: 0,    type: 'badge', requirement: 'مطلوب: 20 تعليقاً مفيداً',    createdBy: admin._id },
+            { title: 'الطائر المبكر',  description: 'دخول مبكر 5 أيام متتالية',   emoji: '⏰', cost: 0,    type: 'badge', requirement: 'مطلوب: دخول 5 أيام متتالية', createdBy: admin._id },
+            { title: 'المفكر الناقد',  description: 'تطوير مهارات التفكير النقدي', emoji: '🧠', cost: 0,    type: 'badge', requirement: 'مطلوب: 50 مشاركة',           createdBy: admin._id },
+            { title: 'مبتكر حلول',     description: 'الفوز بمسابقة ابتكار',        emoji: '💡', cost: 0,    type: 'badge', requirement: 'مطلوب: فوز بمسابقة',          createdBy: admin._id },
+            { title: 'ندوة حصرية مع خبراء',   description: 'وصول مباشر لندوة تفاعلية مع كبار المتخصصين.', emoji: '🎓', cost: 1500, type: 'store', createdBy: admin._id },
+            { title: 'إطار ملف شخصي مميز',    description: 'تميز بإطار متوهج وحصري لصورتك الشخصية.',      emoji: '✨', cost: 250,  type: 'store', createdBy: admin._id },
+            { title: 'شهادة رقمية معتمدة',    description: 'وثق مهاراتك بشهادة رقمية قابلة للمشاركة.',    emoji: '📜', cost: 500,  type: 'store', createdBy: admin._id },
+        ]);
+        console.log('Rewards seeded');
 
         console.log('Seeding successfully completed');
         process.exit(0);

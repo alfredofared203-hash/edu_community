@@ -1,93 +1,97 @@
-import { request, qs, tokenStore } from "./apiClient";
+import http from "./axios";
 
-const api = {
-  login: (body) => request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  register: (body) => request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  logout: () => request("/auth/logout", { method: "POST" }),
-  getMe: () => request("/auth/me"),
+// ===== طبقة الـAPI =====
+// بنستخدم نسخة axios الجاهزة (http) اللي فيها:
+//   - إضافة التوكن تلقائياً لكل طلب
+//   - تجديد التوكن تلقائياً لو خلص (interceptor في axios.js)
+//
+// الباك بيرجّع كل الردود بالشكل: { success, message, data, meta? }
+// فبنعمل دالة unwrap بتطلّع الـ data (وتضيف معاها message و meta لو موجودين)
+// عشان الكومبوننتس تشتغل بنفس الشكل القديم (مثلاً data.materials).
 
-  getSubjects: (grade) => request("/subjects" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  createSubject: (body) => request("/subjects", { method: "POST", body: JSON.stringify(body) }),
+function unwrap(res) {
+  const body = res.data || {};
+  return { ...(body.data || {}), meta: body.meta, message: body.message };
+}
 
-  getMaterials: (params = {}) => request("/materials" + qs(params)),
-  getMaterial: (id) => request("/materials/" + id),
-  createMaterial: (formData) => request("/materials", { method: "POST", body: formData }),
-  deleteMaterial: (id) => request("/materials/" + id, { method: "DELETE" }),
+// نحوّل object لـ query string ونشيل القيم الفاضية
+function toQuery(params = {}) {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
+  );
+  const qs = new URLSearchParams(clean).toString();
+  return qs ? "?" + qs : "";
+}
 
-  getPosts: () => request("/posts"),
-  createPost: (formData) => request("/posts", { method: "POST", body: formData }),
-  likePost: (id) => request("/posts/" + id + "/like", { method: "POST" }),
-  getComments: (id) => request("/posts/" + id + "/comments"),
-  createComment: (id, content) =>
-    request("/posts/" + id + "/comments", {
-      method: "POST",
-      body: JSON.stringify({ content }),
-    }),
+export const api = {
+  // ===== الحسابات =====
+  login: (body) => http.post("/auth/login", body).then(unwrap),
+  register: (body) => http.post("/auth/register", body).then(unwrap),
+  refresh: (refreshToken) => http.post("/auth/refresh", { refreshToken }).then(unwrap),
+  getMe: () => http.get("/auth/me").then(unwrap),
+  updateMe: (body) => http.patch("/auth/me", body).then(unwrap),
 
-  getChallenges: () => request("/challenges"),
-  getSubmissions: () => request("/challenges/submissions"),
-  submitChallenge: (id, answer) =>
-    request("/challenges/" + id + "/submit", {
-      method: "POST",
-      body: JSON.stringify({ answer }),
-    }),
+  // ===== المواد الدراسية =====
+  getSubjects: (grade) => http.get("/subjects" + toQuery({ grade })).then(unwrap),
+  createSubject: (body) => http.post("/subjects", body).then(unwrap),
 
-  getLeaderboard: (grade) =>
-    request("/leaderboard" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  getSchools: () => request("/leaderboard/schools"),
+  // ===== المواد التعليمية =====
+  getMaterials: (params = {}) => http.get("/materials" + toQuery(params)).then(unwrap),
+  getMaterial: (id) => http.get("/materials/" + id).then(unwrap),
+  createMaterial: (formData) => http.post("/materials", formData).then(unwrap),
+  deleteMaterial: (id) => http.delete("/materials/" + id).then(unwrap),
+  getMyMaterials: () => http.get("/materials/mine").then(unwrap),
 
-  getTeachers: () => request("/teachers"),
-  rateTeacher: (id, rating, comment) =>
-    request("/teachers/" + id + "/rate", {
-      method: "POST",
-      body: JSON.stringify({ rating, comment }),
-    }),
+  // ===== شيفتات المدرسين المناوبين =====
+  getShifts: (subject) => http.get("/shifts" + toQuery({ subject })).then(unwrap),
+  getShiftsNow: (subject) => http.get("/shifts/now" + toQuery({ subject })).then(unwrap),
 
-  getAdminStats: () => request("/admin/stats"),
-  getAdminUsers: () => request("/admin/users"),
-  deleteUser: (userId) =>
-    request(`/admin/users/${userId}`, { method: "DELETE" }),
+  // ===== حضور المدرس نفسه =====
+  getMyAttendance: () => http.get("/attendance/me").then(unwrap),
+  checkoutAttendance: () => http.post("/attendance/checkout").then(unwrap),
 
-  getRoomMessages: (grade, params = {}) =>
-    request(`/v1/chat/messages${qs({ grade, ...params })}`),
+  // ===== الشات (السجل — اللحظي عبر Socket) =====
+  getMessages: (room) => http.get("/chat/messages" + toQuery({ room })).then(unwrap),
+  sendMessage: (room, text) => http.post("/chat/messages", { room, text }).then(unwrap),
 
-  getSoftSkills: () => request("/v1/softskills"),
-  getSoftSkillSubmissions: (skillId) =>
-    request(`/v1/softskills/${skillId}/submissions`),
-  submitPresentation: (skillId, formData) =>
-    request(`/v1/softskills/${skillId}/submit`, {
-      method: "POST",
-      body: formData,
-    }),
-  gradeSubmission: (submissionId, data) =>
-    request(`/v1/softskills/submissions/${submissionId}/grade`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+  // ===== الدروس أونلاين =====
+  getLessons: (grade) => http.get("/lessons" + toQuery({ grade })).then(unwrap),
+  createLesson: (body) => http.post("/lessons", body).then(unwrap),
+  deleteLesson: (id) => http.delete("/lessons/" + id).then(unwrap),
 
-  getNotifications: () => request("/v1/notifications"),
-  markNotificationRead: (id) =>
-    request(`/v1/notifications/${id}/read`, { method: "PATCH" }),
-  markAllNotificationsRead: () =>
-    request("/v1/notifications/read-all", { method: "PATCH" }),
+  // ===== السوفت سكيلز =====
+  getTasks: () => http.get("/soft-skills/tasks").then(unwrap),
+  createTask: (body) => http.post("/soft-skills/tasks", body).then(unwrap),
+  submitTask: (id, formData) => http.post("/soft-skills/tasks/" + id + "/submit", formData).then(unwrap),
+  getTaskSubmissions: (taskId) => http.get("/soft-skills/submissions" + toQuery({ task: taskId })).then(unwrap),
+  gradeSubmission: (id, body) => http.patch("/soft-skills/submissions/" + id + "/grade", body).then(unwrap),
 
-  getRecommendedTeachers: (limit = 10) =>
-    request(`/v1/recommendations/teachers${qs({ limit })}`),
+  // ===== المكافآت =====
+  getRewards: () => http.get("/rewards").then(unwrap),
+  grantReward: (body) => http.post("/rewards", body).then(unwrap),
 
-  // ===== Rewards =====
-  getRewards: () => request("/v1/rewards"),
-  getMyRewards: () => request("/v1/rewards/my"),
-  grantReward: (userId, rewardId) =>
-    request("/v1/rewards/grant", {
-      method: "POST",
-      body: JSON.stringify({ userId, rewardId }),
-    }),
-  revokeReward: (userId, rewardId) =>
-    request("/v1/rewards/revoke", {
-      method: "POST",
-      body: JSON.stringify({ userId, rewardId }),
-    }),
-  getUsersWithRewards: () => request("/v1/rewards/users"),
+  // ===== المجتمع =====
+  getPosts: () => http.get("/posts").then(unwrap),
+  createPost: (formData) => http.post("/posts", formData).then(unwrap),
+  likePost: (id) => http.post("/posts/" + id + "/like").then(unwrap),
+  getComments: (id) => http.get("/posts/" + id + "/comments").then(unwrap),
+  createComment: (id, content) => http.post("/posts/" + id + "/comments", { content }).then(unwrap),
+
+  // ===== التحديات =====
+  getChallenges: () => http.get("/challenges").then(unwrap),
+  getSubmissions: () => http.get("/challenges/submissions").then(unwrap),
+  submitChallenge: (id, answer) => http.post("/challenges/" + id + "/submit", { answer }).then(unwrap),
+
+  // ===== المتصدّرون =====
+  getLeaderboard: (grade) => http.get("/leaderboard" + toQuery({ grade })).then(unwrap),
+  getSchools: () => http.get("/leaderboard/schools").then(unwrap),
+
+  // ===== المدرسون =====
+  getTeachers: () => http.get("/teachers").then(unwrap),
+  rateTeacher: (id, rating, comment) => http.post("/teachers/" + id + "/rate", { rating, comment }).then(unwrap),
+
+  // ===== الأدمن =====
+  getAdminStats: () => http.get("/admin/stats").then(unwrap),
+  getAdminUsers: () => http.get("/admin/users").then(unwrap),
+  deleteUser: (id) => http.delete("/admin/users/" + id).then(unwrap),
 };
-
-export { api, tokenStore };

@@ -2,25 +2,6 @@ import React, { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import img1 from "../../assets/1.png";
-import img2 from "../../assets/2.png";
-import img3 from "../../assets/3.png";
-
-// ── بيانات وهمية للعرض (تُستبدل بالـ API لاحقاً) ──────────────────────────
-const MOCK_BADGES_EARNED = [
-  { id: 1, emoji: "🧮", title: "عبقري الرياضيات", date: "12 / 2023", bg: "bg-amber-50", border: "border-amber-200" },
-  { id: 2, emoji: "💬", title: "مشارك نشط",       date: "05 / 2023", bg: "bg-emerald-50", border: "border-emerald-200" },
-  { id: 3, emoji: "⏰", title: "الطائر المبكر",   date: "18 / 2023", bg: "bg-blue-50",    border: "border-blue-200" },
-];
-const MOCK_BADGES_LOCKED = [
-  { id: 4, emoji: "🧠", title: "المفكر الناقد",  req: "مطلوب: 50 مشاركة" },
-  { id: 5, emoji: "💡", title: "مبتكر حلول",     req: "مطلوب: فوز بمسابقة" },
-];
-const MOCK_STORE = [
-  { id: 1, img: img1, title: "ندوة حصرية مع خبراء",      desc: "وصول مباشر لندوة تفاعلية مع كبار المتخصصين في مجالك.", cost: 1500 },
-  { id: 2, img: img2, title: "إطار ملف شخصي مميز",       desc: "تميز بين زملائك بإطار متوهج وحصري لصورتك الشخصية.",   cost: 250  },
-  { id: 3, img: img3, title: "شهادة رقمية معتمدة",        desc: "وثق مهاراتك بشهادة رقمية قابلة للمشاركة على لينكد إن.", cost: 500 },
-];
 const MOCK_LEADERBOARD = [
   { rank: 12, name: "ياسين إبراهيم", xp: 1340, avatar: "https://i.pravatar.cc/150?img=11", isMe: false },
   { rank: 13, name: "سارة محمود",    xp: 1295, avatar: "https://i.pravatar.cc/150?img=5",  isMe: false },
@@ -52,8 +33,11 @@ export default function RewardsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const myXP      = user?.points || 1250;
-  const badgeCount = myRewards.length || MOCK_BADGES_EARNED.length;
+  const myXP       = user?.points || 0;
+  const earnedIds  = new Set(myRewards.map((r) => r.id));
+  const badges     = allRewards.filter((r) => r.type === 'badge');
+  const storeItems = allRewards.filter((r) => r.type === 'store');
+  const badgeCount = myRewards.filter((r) => r.type === 'badge').length;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 p-4 md:p-6 text-right" dir="rtl">
@@ -84,25 +68,24 @@ export default function RewardsPage() {
               <span className="text-blue-600 text-sm font-semibold cursor-pointer hover:underline">عرض الكل</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {MOCK_BADGES_EARNED.map((b) => (
-                <div key={b.id} className={`border ${b.border} ${b.bg} p-4 rounded-2xl flex flex-col items-center text-center gap-2`}>
-                  <div className={`w-14 h-14 rounded-full bg-white border ${b.border} flex items-center justify-center text-2xl shadow-sm`}>
-                    {b.emoji}
+              {loading && <p className="text-sm text-slate-400 col-span-5">جاري التحميل...</p>}
+              {badges.map((b) => {
+                const earned = earnedIds.has(b.id);
+                return earned ? (
+                  <div key={b.id} className="border border-amber-200 bg-amber-50 p-4 rounded-2xl flex flex-col items-center text-center gap-2">
+                    <div className="w-14 h-14 rounded-full bg-white border border-amber-200 flex items-center justify-center text-2xl shadow-sm">{b.emoji}</div>
+                    <h4 className="font-bold text-sm text-slate-800">{b.title}</h4>
+                    <p className="text-[10px] text-slate-400">{new Date(b.createdAt).toLocaleDateString('ar-EG')}</p>
                   </div>
-                  <h4 className="font-bold text-sm text-slate-800">{b.title}</h4>
-                  <p className="text-[10px] text-slate-400">{b.date}</p>
-                </div>
-              ))}
-              {MOCK_BADGES_LOCKED.map((b) => (
-                <div key={b.id} className="border border-dashed border-slate-200 p-4 rounded-2xl flex flex-col items-center text-center gap-2 relative opacity-70">
-                  <span className="absolute top-2 left-2 text-xs">🔒</span>
-                  <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-2xl">
-                    {b.emoji}
+                ) : (
+                  <div key={b.id} className="border border-dashed border-slate-200 p-4 rounded-2xl flex flex-col items-center text-center gap-2 relative opacity-70">
+                    <span className="absolute top-2 left-2 text-xs">🔒</span>
+                    <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-2xl">{b.emoji}</div>
+                    <h4 className="font-bold text-sm text-slate-700">{b.title}</h4>
+                    <p className="text-[10px] text-rose-500 font-semibold">{b.requirement}</p>
                   </div>
-                  <h4 className="font-bold text-sm text-slate-700">{b.title}</h4>
-                  <p className="text-[10px] text-rose-500 font-semibold">{b.req}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -115,19 +98,20 @@ export default function RewardsPage() {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {MOCK_STORE.map((item) => {
+              {loading && <p className="text-sm text-slate-400 col-span-3">جاري التحميل...</p>}
+              {storeItems.map((item) => {
                 const canAfford = myXP >= item.cost;
                 return (
                   <div key={item.id} className="border border-slate-100 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition">
-                    <div className="h-36 relative overflow-hidden">
-                      <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+                    <div className="h-36 relative overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                      <span className="text-5xl">{item.emoji}</span>
                       <span className="absolute bottom-3 right-3 bg-black/60 text-amber-400 font-bold px-2.5 py-0.5 rounded-full text-xs">
                         ⭐ {item.cost.toLocaleString("ar-EG")} XP
                       </span>
                     </div>
                     <div className="p-4 flex flex-col flex-grow gap-2">
                       <h4 className="font-bold text-slate-800">{item.title}</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed flex-grow">{item.desc}</p>
+                      <p className="text-xs text-slate-400 leading-relaxed flex-grow">{item.description}</p>
                       <button
                         disabled={!canAfford}
                         className={`w-full mt-2 font-bold py-2 rounded-xl text-sm transition ${
