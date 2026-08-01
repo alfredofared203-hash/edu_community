@@ -8,76 +8,67 @@ on:
 
 jobs:
   # ==========================================
-  # Phase 1: Security Scans (DevSecOps)
+  # Phase 1: Security Scans
   # ==========================================
   security-checks:
     name: DevSecOps Security Checks
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout Code
       - name: Checkout Source Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Gitleaks - Secret Detection
       - name: Run Gitleaks (Secret Scanning)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. Semgrep - Static Application Security Testing (SAST)
       - name: Run Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/default
 
-      # 4. Dependency Scan (npm audit)
       - name: Run Dependency Scan (npm audit)
         run: |
           if [ -f package.json ]; then
             npm audit --audit-level=high
           else
-            echo "No root package.json found, skipping root npm audit."
+            echo "No root package.json found, skipping."
           fi
 
   # ==========================================
-  # Phase 2: Build, Scan & Push (Frontend & Backend)
+  # Phase 2: Build & Push (only on push to main)
   # ==========================================
   build-and-push:
     name: Build, Scan & Push Images to Docker Hub
     needs: security-checks
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      # 1. Checkout Code
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 2. Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # --------------------------------------
-      # Frontend Image: Build, Scan & Push
-      # --------------------------------------
-      - name: Build Frontend Image Locally
+      - name: Build Frontend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend  # مسار الفولدر اللي فيه Dockerfile بتاع الـ Frontend
+          context: ./frontend
           load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-app:v1
 
-      - name: Run Trivy Scanner on Frontend Image
+      - name: Scan Frontend Image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/frontend-app:v1'
           format: 'table'
-          exit-code: '0' # غيرناها لـ 0 مؤقتاً عشان لو فيه تحذيرات بسيطة ما يوقفش الـ pipeline
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
 
@@ -90,17 +81,14 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend-app:v1
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend-app:latest
 
-      # --------------------------------------
-      # Backend Image: Build, Scan & Push
-      # --------------------------------------
-      - name: Build Backend Image Locally
+      - name: Build Backend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend  # مسار الفولدر اللي فيه Dockerfile بتاع الـ Backend
+          context: ./backend
           load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend-app:v1
 
-      - name: Run Trivy Scanner on Backend Image
+      - name: Scan Backend Image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/backend-app:v1'
