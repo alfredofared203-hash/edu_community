@@ -23,12 +23,16 @@ exports.myRewards = asyncHandler(async (req, res) => {
 });
 
 exports.grant = asyncHandler(async (req, res) => {
-  await service.grant(req.params.userId, req.params.rewardId);
+  const userId = req.params.userId || req.body.userId;
+  const rewardId = req.params.rewardId || req.body.rewardId;
+  await service.grant(userId, rewardId);
   sendSuccess(res, { message: 'تم منح المكافأة' });
 });
 
 exports.revoke = asyncHandler(async (req, res) => {
-  await service.revoke(req.params.userId, req.params.rewardId);
+  const userId = req.params.userId || req.body.userId;
+  const rewardId = req.params.rewardId || req.body.rewardId;
+  await service.revoke(userId, rewardId);
   sendSuccess(res, { message: 'تم إلغاء المكافأة' });
 });
 

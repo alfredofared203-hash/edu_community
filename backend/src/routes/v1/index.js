@@ -5,7 +5,8 @@ const router = require('express').Router();
 // المسارات القديمة (auth/materials/...) لسه على /api زي ما هي في server.js.
 
 router.use('/auth', require('../auth'));                    // نفس مسارات المصادقة متاحة تحت v1 كمان (للتجديد)
-router.use('/chat', require('./chat'));                    // سجل رسائل الشات (اللحظي في Socket)
+router.use('/chat', require('./chat'));
+router.use('/challenges', require('../challenge.routes'));
 router.use('/softskills', require('./softskill.routes'));
 router.use('/rewards',    require('./reward.routes'));  // المهارات الناعمة + التسليمات
 router.use('/notifications', require('./notification.routes')); // الإشعارات

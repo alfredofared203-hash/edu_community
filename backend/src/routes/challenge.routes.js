@@ -24,6 +24,13 @@ router.get('/', async (req, res, next) => {
 });
 
 
+router.get('/my-submissions', authenticate, async (req, res, next) => {
+  try {
+    const subs = await ChallengeSubmission.find({ userId: req.user.id });
+    res.json({ submissions: subs });
+  } catch (e) { next(e); }
+});
+
 router.get('/submissions', authenticate, async (req, res, next) => {
   try {
     const subs = await ChallengeSubmission.find({ userId: req.user.id });
