@@ -1,97 +1,72 @@
-import http from "./axios";
+import { request, qs, tokenStore } from "./apiClient";
 
-// ===== طبقة الـAPI =====
-// بنستخدم نسخة axios الجاهزة (http) اللي فيها:
-//   - إضافة التوكن تلقائياً لكل طلب
-//   - تجديد التوكن تلقائياً لو خلص (interceptor في axios.js)
-//
-// الباك بيرجّع كل الردود بالشكل: { success, message, data, meta? }
-// فبنعمل دالة unwrap بتطلّع الـ data (وتضيف معاها message و meta لو موجودين)
-// عشان الكومبوننتس تشتغل بنفس الشكل القديم (مثلاً data.materials).
+export { tokenStore };
 
-function unwrap(res) {
-  const body = res.data || {};
-  return { ...(body.data || {}), meta: body.meta, message: body.message };
-}
-
-// نحوّل object لـ query string ونشيل القيم الفاضية
-function toQuery(params = {}) {
-  const clean = Object.fromEntries(
-    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
-  );
-  const qs = new URLSearchParams(clean).toString();
-  return qs ? "?" + qs : "";
-}
+// الباك بيرجع { success, message, data } — بنطلع الـ data مباشرة
+const u = (res) => res?.data ?? res;
 
 export const api = {
-  // ===== الحسابات =====
-  login: (body) => http.post("/auth/login", body).then(unwrap),
-  register: (body) => http.post("/auth/register", body).then(unwrap),
-  refresh: (refreshToken) => http.post("/auth/refresh", { refreshToken }).then(unwrap),
-  getMe: () => http.get("/auth/me").then(unwrap),
-  updateMe: (body) => http.patch("/auth/me", body).then(unwrap),
+  // ===== Auth =====
+  login:    (body) => request("/v1/auth/login",    { method: "POST", body: JSON.stringify(body) }).then(u),
+  register: (body) => request("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }).then(u),
+  getMe:    ()     => request("/v1/auth/me").then(u),
+  logout:   ()     => request("/v1/auth/logout", { method: "POST" }).catch(() => null),
 
-  // ===== المواد الدراسية =====
-  getSubjects: (grade) => http.get("/subjects" + toQuery({ grade })).then(unwrap),
-  createSubject: (body) => http.post("/subjects", body).then(unwrap),
+  // ===== Subjects =====
+  getSubjects:   (grade) => request(`/v1/subjects${qs({ grade })}`).then(u),
+  createSubject: (body)  => request("/v1/subjects", { method: "POST", body: JSON.stringify(body) }).then(u),
 
-  // ===== المواد التعليمية =====
-  getMaterials: (params = {}) => http.get("/materials" + toQuery(params)).then(unwrap),
-  getMaterial: (id) => http.get("/materials/" + id).then(unwrap),
-  createMaterial: (formData) => http.post("/materials", formData).then(unwrap),
-  deleteMaterial: (id) => http.delete("/materials/" + id).then(unwrap),
-  getMyMaterials: () => http.get("/materials/mine").then(unwrap),
+  // ===== Materials =====
+  getMaterials:   (params = {}) => request(`/v1/materials${qs(params)}`).then(u),
+  getMaterial:    (id)          => request(`/v1/materials/${id}`).then(u),
+  createMaterial: (formData)    => request("/v1/materials", { method: "POST", body: formData }).then(u),
+  deleteMaterial: (id)          => request(`/v1/materials/${id}`, { method: "DELETE" }).then(u),
 
-  // ===== شيفتات المدرسين المناوبين =====
-  getShifts: (subject) => http.get("/shifts" + toQuery({ subject })).then(unwrap),
-  getShiftsNow: (subject) => http.get("/shifts/now" + toQuery({ subject })).then(unwrap),
+  // ===== Posts =====
+  getPosts:      ()            => request("/posts").then(u),
+  createPost:    (formData)    => request("/posts", { method: "POST", body: formData }).then(u),
+  likePost:      (id)          => request(`/posts/${id}/like`, { method: "POST" }).then(u),
+  getComments:   (id)          => request(`/posts/${id}/comments`).then(u),
+  createComment: (id, content) => request(`/posts/${id}/comments`, { method: "POST", body: JSON.stringify({ content }) }).then(u),
 
-  // ===== حضور المدرس نفسه =====
-  getMyAttendance: () => http.get("/attendance/me").then(unwrap),
-  checkoutAttendance: () => http.post("/attendance/checkout").then(unwrap),
+  // ===== Challenges =====
+  getChallenges:      ()           => request("/v1/challenges").then(u),
+  getMySubmissions:   ()           => request("/v1/challenges/my-submissions").then(u),
+  submitChallenge:    (id, answer) => request(`/v1/challenges/${id}/submit`, { method: "POST", body: JSON.stringify({ answer }) }).then(u),
 
-  // ===== الشات (السجل — اللحظي عبر Socket) =====
-  getMessages: (room) => http.get("/chat/messages" + toQuery({ room })).then(unwrap),
-  sendMessage: (room, text) => http.post("/chat/messages", { room, text }).then(unwrap),
+  // ===== Leaderboard =====
+  getLeaderboard: (grade) => request(`/leaderboard${qs({ grade })}`).then(u),
+  getSchools:     ()      => request("/leaderboard/schools").then(u),
 
-  // ===== الدروس أونلاين =====
-  getLessons: (grade) => http.get("/lessons" + toQuery({ grade })).then(unwrap),
-  createLesson: (body) => http.post("/lessons", body).then(unwrap),
-  deleteLesson: (id) => http.delete("/lessons/" + id).then(unwrap),
+  // ===== Teachers =====
+  getTeachers:  ()                    => request("/teachers").then(u),
+  rateTeacher:  (id, rating, comment) => request(`/teachers/${id}/rate`, { method: "POST", body: JSON.stringify({ rating, comment }) }).then(u),
 
-  // ===== السوفت سكيلز =====
-  getTasks: () => http.get("/soft-skills/tasks").then(unwrap),
-  createTask: (body) => http.post("/soft-skills/tasks", body).then(unwrap),
-  submitTask: (id, formData) => http.post("/soft-skills/tasks/" + id + "/submit", formData).then(unwrap),
-  getTaskSubmissions: (taskId) => http.get("/soft-skills/submissions" + toQuery({ task: taskId })).then(unwrap),
-  gradeSubmission: (id, body) => http.patch("/soft-skills/submissions/" + id + "/grade", body).then(unwrap),
+  // ===== Admin =====
+  getAdminStats: () => request("/admin/stats").then(u),
+  getAdminUsers: () => request("/admin/users").then(u),
+  deleteUser:    (id) => request(`/admin/users/${id}`, { method: "DELETE" }).then(u),
 
-  // ===== المكافآت =====
-  getRewards: () => http.get("/rewards").then(unwrap),
-  grantReward: (body) => http.post("/rewards", body).then(unwrap),
+  // ===== Chat =====
+  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`).then(u),
 
-  // ===== المجتمع =====
-  getPosts: () => http.get("/posts").then(unwrap),
-  createPost: (formData) => http.post("/posts", formData).then(unwrap),
-  likePost: (id) => http.post("/posts/" + id + "/like").then(unwrap),
-  getComments: (id) => http.get("/posts/" + id + "/comments").then(unwrap),
-  createComment: (id, content) => http.post("/posts/" + id + "/comments", { content }).then(unwrap),
+  // ===== Rewards =====
+  getRewards:          ()                 => request("/v1/rewards").then(u),
+  getMyRewards:        ()                 => request("/v1/rewards/me").then(u),
+  getUsersWithRewards: ()                 => request("/v1/rewards/users").then(u),
+  createReward:        (data)             => request("/v1/rewards", { method: "POST", body: JSON.stringify(data) }).then(u),
+  deleteReward:        (id)               => request(`/v1/rewards/${id}`, { method: "DELETE" }).then(u),
+  grantReward:         (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "POST" }).then(u),
+  revokeReward:        (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "DELETE" }).then(u),
 
-  // ===== التحديات =====
-  getChallenges: () => http.get("/challenges").then(unwrap),
-  getSubmissions: () => http.get("/challenges/submissions").then(unwrap),
-  submitChallenge: (id, answer) => http.post("/challenges/" + id + "/submit", { answer }).then(unwrap),
+  // ===== Soft Skills =====
+  getSoftSkills:           ()            => request("/v1/softskills").then(u),
+  getSoftSkillSubmissions: (skillId)     => request(`/v1/softskills/${skillId}/submissions`).then(u),
+  submitPresentation:      (skillId, fd) => request(`/v1/softskills/${skillId}/submit`, { method: "POST", body: fd }).then(u),
+  gradeSubmission:         (id, data)    => request(`/v1/softskills/submissions/${id}/grade`, { method: "POST", body: JSON.stringify(data) }).then(u),
 
-  // ===== المتصدّرون =====
-  getLeaderboard: (grade) => http.get("/leaderboard" + toQuery({ grade })).then(unwrap),
-  getSchools: () => http.get("/leaderboard/schools").then(unwrap),
-
-  // ===== المدرسون =====
-  getTeachers: () => http.get("/teachers").then(unwrap),
-  rateTeacher: (id, rating, comment) => http.post("/teachers/" + id + "/rate", { rating, comment }).then(unwrap),
-
-  // ===== الأدمن =====
-  getAdminStats: () => http.get("/admin/stats").then(unwrap),
-  getAdminUsers: () => http.get("/admin/users").then(unwrap),
-  deleteUser: (id) => http.delete("/admin/users/" + id).then(unwrap),
+  // ===== Notifications =====
+  getNotifications:         ()   => request("/v1/notifications").then(u),
+  markNotificationRead:     (id) => request(`/v1/notifications/${id}/read`, { method: "PATCH" }).then(u),
+  markAllNotificationsRead: ()   => request("/v1/notifications/read-all", { method: "PATCH" }).then(u),
 };

@@ -14,8 +14,8 @@ export default function AdminRewardsPage() {
   useEffect(() => {
     Promise.all([api.getRewards(), api.getUsersWithRewards()])
       .then(([rRes, uRes]) => {
-        setRewards(rRes?.data?.rewards || rRes?.rewards || []);
-        setUsers(uRes?.data?.users || uRes?.users || []);
+        setRewards(rRes?.data?.rewards ?? rRes?.rewards ?? []);
+        setUsers(uRes?.data?.users    ?? uRes?.users    ?? []);
       })
       .catch((e) => setError(e.message || "تعذّر تحميل البيانات"))
       .finally(() => setLoading(false));

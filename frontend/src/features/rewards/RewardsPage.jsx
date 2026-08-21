@@ -26,8 +26,8 @@ export default function RewardsPage() {
   useEffect(() => {
     Promise.all([api.getRewards(), api.getMyRewards()])
       .then(([allRes, myRes]) => {
-        setAllRewards(allRes?.data?.rewards || allRes?.rewards || []);
-        setMyRewards(myRes?.data?.rewards  || myRes?.rewards  || []);
+        setAllRewards(allRes?.data?.rewards ?? allRes?.rewards ?? []);
+        setMyRewards(myRes?.data?.rewards  ?? myRes?.rewards  ?? []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
