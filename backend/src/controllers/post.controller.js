@@ -1,9 +1,7 @@
-// controllers/post.controller.js
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const { formatPost, formatComment } = require('../utils/formatters');
 
-// جلب جميع المنشورات
 exports.getPosts = async (req, res, next) => {
     try {
         const posts = await Post.find()
@@ -20,7 +18,6 @@ exports.getPosts = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
-// إنشاء منشور جديد
 exports.createPost = async (req, res, next) => {
     try {
         const postDoc = await Post.create({
@@ -35,7 +32,6 @@ exports.createPost = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
-// الإعجاب / إلغاء الإعجاب بمنشور
 exports.likePost = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -43,16 +39,15 @@ exports.likePost = async (req, res, next) => {
 
         const index = post.likes.indexOf(req.user.id);
         if (index > -1) {
-            post.likes.splice(index, 1); // Unlike
+            post.likes.splice(index, 1);
         } else {
-            post.likes.push(req.user.id); // Like
+            post.likes.push(req.user.id);
         }
         await post.save();
         res.json({ ok: true, likes: post.likes.length, liked: index === -1 });
     } catch (e) { next(e); }
 };
 
-// جلب التعليقات لمنشور معين
 exports.getComments = async (req, res, next) => {
     try {
         const comments = await Comment.find({ postId: req.params.id })
@@ -63,7 +58,6 @@ exports.getComments = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
-// إضافة تعليق على منشور
 exports.addComment = async (req, res, next) => {
     try {
         const { content } = req.body;

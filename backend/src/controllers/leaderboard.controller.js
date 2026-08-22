@@ -1,6 +1,5 @@
 const User = require('../models/User');
 
-// دالة الطلاب
 exports.getStudentLeaderboard = async (req, res, next) => {
     try {
         const { grade } = req.query;
@@ -24,7 +23,6 @@ exports.getStudentLeaderboard = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
-// دالة المدارس
 exports.getSchoolLeaderboard = async (req, res, next) => {
     try {
         const schools = await User.aggregate([

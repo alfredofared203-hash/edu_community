@@ -1,5 +1,3 @@
-// utils/formatters.js
-
 exports.formatPost = (p, commentsCount = 0) => ({
     id: p._id,
     user_id: p.userId ? p.userId._id : null,
