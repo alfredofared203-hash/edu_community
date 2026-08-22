@@ -18,8 +18,24 @@ const MATERIAL_TYPES = [
   { value: "video", label: "\u0641\u064A\u062F\u064A\u0648" },
   { value: "graphic", label: "\u062C\u0631\u0627\u0641\u064A\u0643 \u062A\u0648\u0636\u064A\u062D\u064A" }
 ];
+const SUBJECTS = [
+  "الرياضيات",
+  "العلوم",
+  "اللغة العربية",
+  "اللغة الإنجليزية",
+  "الدراسات الاجتماعية",
+  "الفيزياء",
+  "الكيمياء",
+  "الأحياء",
+  "التاريخ",
+  "الجغرافيا",
+  "الحاسب الآلي",
+  "التربية الدينية",
+];
+
 export {
   GRADES,
   MATERIAL_TYPES,
-  gradeLabel
+  gradeLabel,
+  SUBJECTS
 };

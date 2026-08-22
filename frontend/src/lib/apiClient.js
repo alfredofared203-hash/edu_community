@@ -1,8 +1,10 @@
-const BASE_URL = "http://localhost:5000/api";
+import axios from "axios";
+
+const BASE_URL = "http://localhost:3000/api";
 const ACCESS_KEY = "accessToken";
 const REFRESH_KEY = "refreshToken";
 
-const tokenStore = {
+export const tokenStore = {
   getAccess: () => localStorage.getItem(ACCESS_KEY),
   getRefresh: () => localStorage.getItem(REFRESH_KEY),
   set: (access, refresh) => {
@@ -16,6 +18,13 @@ const tokenStore = {
 };
 
 const NO_REFRESH = ["/auth/login", "/auth/register", "/auth/refresh"];
+
+export function qs(params) {
+  const query = Object.keys(params)
+    .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+    .join('&');
+  return query ? `?${query}` : '';
+}
 
 async function tryRefresh() {
   const refreshToken = tokenStore.getRefresh();
@@ -31,58 +40,45 @@ async function tryRefresh() {
     if (!res.ok) return false;
 
     const json = await res.json();
-    const newAccess = json?.data?.accessToken;
+    const refreshPayload = json?.data ?? json;
+    const newAccess = refreshPayload?.accessToken;
+    const newRefresh = refreshPayload?.refreshToken;
     if (!newAccess) return false;
 
-    tokenStore.set(newAccess);
+    tokenStore.set(newAccess, newRefresh);
     return true;
   } catch {
     return false;
   }
 }
 
-async function request(endpoint, options = {}, isRetry = false) {
+export async function request(endpoint, options = {}, isRetry = false) {
   const token = options.token ?? tokenStore.getAccess();
-  const headers = new Headers(options.headers || {});
-
+  const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (!(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
 
   const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
-
-  if (response.status === 401 && !isRetry && !NO_REFRESH.some((p) => endpoint.includes(p))) {
-    const refreshed = await tryRefresh();
-    if (refreshed) return request(endpoint, options, true);
+  
+  if (response.status === 401 && !NO_REFRESH.some((p) => endpoint.includes(p))) {
+    if (!isRetry) {
+      const refreshed = await tryRefresh();
+      if (refreshed) return request(endpoint, options, true);
+    }
   }
-
+  
   const data = await response.json().catch(() => ({}));
 
+  // Do not treat a failed HTTP response as a successful API result.  In
+  // particular, authentication callers must not continue to the app with an
+  // `{ error: ... }` object in place of a user session.
   if (!response.ok) {
-    throw new Error(data.message || data.error || "حدث خطأ غير متوقع");
-  }
-
-  if (data && typeof data === "object" && "success" in data && "data" in data) {
-    return data.data;
+    const message = data?.error || data?.message || "تعذر إتمام الطلب. حاول مرة أخرى.";
+    const error = new Error(message);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data;
 }
-
-const qs = (params = {}) => {
-  const clean = Object.fromEntries(
-    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
-  );
-  const s = new URLSearchParams(clean).toString();
-  return s ? `?${s}` : "";
-};
-
-export {
-  BASE_URL,
-  ACCESS_KEY,
-  REFRESH_KEY,
-  tokenStore,
-  NO_REFRESH,
-  tryRefresh,
-  request,
-  qs
-};
