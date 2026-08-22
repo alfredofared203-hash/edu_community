@@ -3,14 +3,14 @@ const TeacherRating = require('../models/TeacherRating');
 
 exports.getTeachers = async (req, res, next) => {
   try {
-    const minRatings = 3; // عدد التقييمات المطلوب للثقة في المتوسط
-    const globalAverage = 4.0; // المتوسط العام المفترض لكل المدرسين
+    const minRatings = 3;     
+    const globalAverage = 4.0; 
 
     const teachers = await User.aggregate([
       { $match: { role: 'teacher' } },
       { 
         $lookup: { 
-          from: 'teacherratings', // تأكد أن هذا الاسم يطابق اسم الكوليكشن في DB
+          from: 'teacherratings', 
           localField: '_id', 
           foreignField: 'teacherId', 
           as: 'ratings' 
@@ -58,12 +58,10 @@ exports.rateTeacher = async (req, res, next) => {
   try {
     const { rating, comment } = req.body;
     
-    // التحقق من صحة التقييم
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ error: 'the rating must be between 1 and 5' });
     }
 
-    // التأكد من وجود المعلم
     const teacher = await User.findOne({ _id: req.params.id, role: 'teacher' });
     if (!teacher) return res.status(404).json({ error: 'the teacher does not exist' });
 

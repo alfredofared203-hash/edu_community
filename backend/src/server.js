@@ -56,7 +56,7 @@ app.use('/api/admin', adminRoutes);
 app.use(errorHandler);
 
 const server = app.listen(env.port, () =>
-  console.log(`🚀 EduCommunity Egypt API running on http://localhost:${env.port}`)
+  console.log(` EduCommunity Egypt API running on http://localhost:${env.port}`)
 );
 
  process.on('unhandledRejection', (err) => {

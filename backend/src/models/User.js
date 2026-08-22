@@ -3,16 +3,24 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: [true, 'الاسم مطلوب'], trim: true },
+    name: { 
+      type: String, 
+      required: [true, 'The name is required'], 
+      trim: true 
+    },
     email: {
       type: String,
-      required: [true, 'البريد الإلكتروني مطلوب'],
+      required: [true, 'The email is required'],
       unique: true,
       trim: true,
       lowercase: true,
     },
-    // select:false => مايرجعش مع أي استعلام عادي إلا لو طلبناه صراحةً (.select('+password'))
-    password: { type: String, required: [true, 'كلمة المرور مطلوبة'], minlength: 6, select: false },
+    password: { 
+      type: String, 
+      required: [true, 'The password is required'], 
+      minlength: 6, 
+      select: false 
+    },
     role: {
       type: String,
       required: true,
@@ -28,16 +36,16 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
- userSchema.pre('save', async function () {
+userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 10);
 });
 
- userSchema.methods.comparePassword = function (plain) {
+userSchema.methods.comparePassword = function (plain) {
   return bcrypt.compare(plain, this.password);
 };
 
- userSchema.set('toJSON', {
+userSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: (doc, ret) => {
