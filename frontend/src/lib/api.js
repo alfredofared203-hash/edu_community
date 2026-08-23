@@ -10,6 +10,7 @@ export const api = {
   login:    (body) => request("/v1/auth/login",    { method: "POST", body: JSON.stringify(body) }).then(u),
   register: (body) => request("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }).then(u),
   getMe:    ()     => request("/v1/auth/me").then(u),
+  updateProfile: (formData) => request("/v1/auth/profile", { method: "PATCH", body: formData }).then(u),
   logout:   ()     => request("/v1/auth/logout", { method: "POST" }).catch(() => null),
 
   // ===== Subjects =====

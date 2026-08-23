@@ -13,8 +13,20 @@ const userSchema = new mongoose.Schema(
     grade: String,        
     schoolCode: String,   
     nationalId: String,   
+    subject: String,
     points: { type: Number, default: 0 },
     badges: { type: [String], default: [] },
+    avatarUrl: { type: String, default: '' },
+    avatarPosition: { type: Number, default: 50, min: 0, max: 100 },
+    preferences: {
+      theme: { type: String, enum: ['light', 'dark'], default: 'light' },
+      language: { type: String, enum: ['ar', 'en'], default: 'ar' },
+    },
+    roleSettings: {
+      student: { grade: String, schoolCode: String, nationalId: String },
+      teacher: { subject: String, schoolCode: String },
+      admin: { schoolCode: String },
+    },
   },
   { timestamps: true } 
 );
