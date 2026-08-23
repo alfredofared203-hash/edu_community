@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Upload, Users, Sparkles, CheckCircle2, Clock, ChevronLeft, AlertCircle } from "lucide-react";
+import { BookOpen, Upload, Users, Sparkles, CheckCircle2, Clock, ChevronLeft, AlertCircle, Video } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { Card } from "@/components/ui/card";
+import { GRADES } from "../lib/grades";
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -28,6 +29,14 @@ export default function TeacherDashboard() {
 
   // مهام تحتاج تصحيح (pending submissions)
   const pendingSkills = softSkills.filter((s) => s.pendingCount > 0);
+  const [lesson, setLesson] = useState({ title: "", description: "", grade: user?.grade || "sec-1", startsAt: "", meetingUrl: "" });
+  const [publishing, setPublishing] = useState(false);
+  const publishLesson = async (event) => {
+    event.preventDefault(); setPublishing(true);
+    try { await api.createLesson(lesson); toast.success("تم نشر الدرس وإشعار طلاب الصف"); setLesson({ ...lesson, title: "", description: "", startsAt: "", meetingUrl: "" }); }
+    catch (error) { toast.error(error.message || "تعذر نشر الدرس"); }
+    finally { setPublishing(false); }
+  };
 
   return (
     <div dir="rtl" className="max-w-5xl mx-auto space-y-6">
@@ -57,6 +66,18 @@ export default function TeacherDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <div className="lg:col-span-2 space-y-6">
+
+          <Card className="p-5 space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2"><Video className="w-5 h-5 text-emerald-600" /> طرح درس أونلاين</h3>
+            <form onSubmit={publishLesson} className="grid sm:grid-cols-2 gap-3">
+              <input required placeholder="عنوان الدرس" value={lesson.title} onChange={(e) => setLesson({ ...lesson, title: e.target.value })} className="rounded-lg border p-2 text-sm" />
+              <select required value={lesson.grade} onChange={(e) => setLesson({ ...lesson, grade: e.target.value })} className="rounded-lg border p-2 text-sm">{GRADES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}</select>
+              <input required type="datetime-local" value={lesson.startsAt} onChange={(e) => setLesson({ ...lesson, startsAt: e.target.value })} className="rounded-lg border p-2 text-sm" />
+              <input required type="url" placeholder="رابط Zoom أو Meet" value={lesson.meetingUrl} onChange={(e) => setLesson({ ...lesson, meetingUrl: e.target.value })} className="rounded-lg border p-2 text-sm" />
+              <textarea placeholder="وصف مختصر" value={lesson.description} onChange={(e) => setLesson({ ...lesson, description: e.target.value })} className="rounded-lg border p-2 text-sm sm:col-span-2" />
+              <button disabled={publishing} className="rounded-lg bg-emerald-600 text-white py-2 text-sm font-bold sm:col-span-2 disabled:opacity-50">{publishing ? "جار النشر..." : "نشر الدرس للطلاب"}</button>
+            </form>
+          </Card>
 
           {/* موادي */}
           <Section title="موادي التعليمية" action={{ label: "رفع مادة جديدة", onClick: () => navigate("/materials") }}>

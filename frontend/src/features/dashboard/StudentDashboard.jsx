@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useQueries } from "@tanstack/react-query";
-import { BookOpen, Trophy, Star, Sparkles, Gift, ChevronLeft, CheckCircle2, Clock, MessageSquare } from "lucide-react";
+import { BookOpen, Trophy, Star, Sparkles, Gift, ChevronLeft, CheckCircle2, Clock, MessageSquare, Video } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { Card } from "@/components/ui/card";
@@ -20,6 +20,7 @@ export default function StudentDashboard() {
       { queryKey: ["softSkills"],             queryFn: () => api.getSoftSkills(),                       staleTime: 60_000 },
       { queryKey: ["leaderboard"],            queryFn: () => api.getLeaderboard(),                      staleTime: 60_000 },
       { queryKey: ["teachers"],              queryFn: () => api.getTeachers(),                          staleTime: 120_000 },
+      { queryKey: ["lessons", user?.grade],  queryFn: () => api.getLessons(),                           staleTime: 30_000 },
     ],
   });
 
@@ -31,6 +32,7 @@ export default function StudentDashboard() {
   const softSkills = (results[3].data?.skills     ?? results[3].data  ?? []).slice(0, 3);
   const board      =  results[4].data?.leaderboard ?? results[4].data ?? [];
   const teachers   =  results[5].data?.teachers   ?? results[5].data  ?? [];
+  const lessons    = (results[6].data?.lessons    ?? results[6].data  ?? []).slice(0, 3);
 
   const points        = user?.points ?? 0;
   const badges        = myRewards.filter((r) => r.type === "badge");
@@ -71,6 +73,16 @@ export default function StudentDashboard() {
           />
         </div>
       </Card>
+
+      <Section title="الدروس الأونلاين القادمة">
+        {lessons.length === 0 ? <Empty text="لا توجد دروس مجدولة لصفك حاليًا" /> : lessons.map((lesson) => (
+          <div key={lesson._id || lesson.id} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
+            <Video className="w-5 h-5 text-emerald-600" />
+            <div className="flex-1"><p className="font-semibold text-sm">{lesson.title}</p><p className="text-xs text-slate-500">{new Date(lesson.startsAt).toLocaleString("ar-EG")} · {lesson.teacher?.name || "المعلم"}</p></div>
+            <a href={lesson.meetingUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-emerald-700">دخول</a>
+          </div>
+        ))}
+      </Section>
 
       {/* ── بطاقات إحصاء سريعة ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

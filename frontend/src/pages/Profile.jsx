@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Trophy,
@@ -13,11 +13,73 @@ import {
   ShieldAlert,
   GraduationCap,
   School
+  ,Upload, Save, Sun, Moon, Languages
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { toast } from "sonner";
+import { useAppSettings } from "../context/AppSettingsContext";
+import { GRADES, SUBJECTS } from "../lib/grades";
+
+const BACKEND_ORIGIN = "http://localhost:3000";
+
+function ProfileSettings() {
+  const { user, refreshUser } = useAuth();
+  const { settings, updateSettings } = useAppSettings();
+  const inputRef = useRef(null);
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    grade: user?.grade || "sec-1",
+    schoolCode: user?.schoolCode || "",
+    nationalId: user?.nationalId || "",
+    subject: user?.subject || "",
+    avatarPosition: user?.avatarPosition ?? 50,
+  });
+  const [avatar, setAvatar] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const setField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+  const save = async () => {
+    setSaving(true);
+    try {
+      const data = new FormData();
+      Object.entries(form).forEach(([key, value]) => data.append(key, value));
+      if (avatar) data.append("avatar", avatar);
+      data.append("theme", settings.theme);
+      data.append("language", settings.language);
+      await api.updateProfile(data);
+      await refreshUser();
+      toast.success("تم حفظ إعدادات الحساب");
+    } catch (error) {
+      toast.error(error.message || "تعذر حفظ الإعدادات");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const avatarUrl = avatar ? URL.createObjectURL(avatar) : user?.avatarUrl;
+  const imageSrc = avatarUrl?.startsWith("http") ? avatarUrl : avatarUrl ? `${BACKEND_ORIGIN}${avatarUrl}` : null;
+
+  return <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="elevated-card rounded-2xl p-5 border space-y-5">
+    <div><h2 className="font-display font-bold text-foreground">إعدادات الحساب</h2><p className="text-sm text-muted-foreground">إعدادات منفصلة حسب نوع حسابك</p></div>
+    <div className="flex flex-wrap items-center gap-5">
+      <button type="button" onClick={() => inputRef.current?.click()} className="relative w-24 h-24 rounded-2xl overflow-hidden border-4 border-card shadow-lg bg-secondary" title="رفع صورة شخصية">
+        {imageSrc ? <img src={imageSrc} alt="" className="w-full h-full object-cover" style={{ objectPosition: `center ${form.avatarPosition}%` }} /> : <span className="w-full h-full flex items-center justify-center text-3xl font-bold text-primary">{user.name?.charAt(0)}</span>}
+        <span className="absolute inset-x-0 bottom-0 bg-black/55 text-white text-xs py-1"><Upload className="w-3 h-3 inline" /> تغيير</span>
+      </button>
+      <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(event) => setAvatar(event.target.files?.[0] || null)} />
+      <div className="flex-1 min-w-[240px] space-y-2"><label className="text-sm font-semibold">موضع الصورة داخل الإطار</label><input type="range" min="0" max="100" value={form.avatarPosition} onChange={(event) => setField("avatarPosition", event.target.value)} className="w-full accent-primary" /><div className="flex justify-between text-xs text-muted-foreground"><span>أعلى</span><span>أسفل</span></div></div>
+    </div>
+    <div className="grid sm:grid-cols-2 gap-3">
+      <label className="text-sm font-semibold">الاسم<input className="mt-1 w-full rounded-lg border bg-background p-2 font-normal" value={form.name} onChange={(event) => setField("name", event.target.value)} /></label>
+      {user.role === "student" && <><label className="text-sm font-semibold">المرحلة<select className="mt-1 w-full rounded-lg border bg-background p-2 font-normal" value={form.grade} onChange={(event) => setField("grade", event.target.value)}>{GRADES.map((grade) => <option key={grade.value} value={grade.value}>{grade.label}</option>)}</select></label><label className="text-sm font-semibold">الرقم القومي<input className="mt-1 w-full rounded-lg border bg-background p-2 font-normal" value={form.nationalId} onChange={(event) => setField("nationalId", event.target.value)} /></label></>}
+      {user.role === "teacher" && <label className="text-sm font-semibold">التخصص<select className="mt-1 w-full rounded-lg border bg-background p-2 font-normal" value={form.subject} onChange={(event) => setField("subject", event.target.value)}>{SUBJECTS.map((subject) => <option key={subject} value={subject}>{subject}</option>)}</select></label>}
+      <label className="text-sm font-semibold">كود المدرسة<input className="mt-1 w-full rounded-lg border bg-background p-2 font-normal" value={form.schoolCode} onChange={(event) => setField("schoolCode", event.target.value)} /></label>
+    </div>
+    <div className="border-t pt-4 space-y-3"><h3 className="font-semibold">مظهر التطبيق واللغة</h3><div className="flex flex-wrap gap-2"><button type="button" onClick={() => updateSettings({ theme: "light" })} className={`px-3 py-2 rounded-lg border ${settings.theme === "light" ? "bg-primary text-primary-foreground" : "bg-background"}`}><Sun className="w-4 h-4 inline" /> فاتح</button><button type="button" onClick={() => updateSettings({ theme: "dark" })} className={`px-3 py-2 rounded-lg border ${settings.theme === "dark" ? "bg-primary text-primary-foreground" : "bg-background"}`}><Moon className="w-4 h-4 inline" /> داكن</button><button type="button" onClick={() => updateSettings({ language: settings.language === "ar" ? "en" : "ar" })} className="px-3 py-2 rounded-lg border bg-background"><Languages className="w-4 h-4 inline" /> {settings.language === "ar" ? "English" : "العربية"}</button></div></div>
+    <button type="button" onClick={save} disabled={saving} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-60"><Save className="w-4 h-4 inline" /> {saving ? "جار الحفظ..." : "حفظ إعدادات الحساب"}</button>
+  </motion.section>;
+}
 const defaultBadges = [
   { name: "\u0628\u0637\u0644 \u0627\u0644\u0623\u0633\u0628\u0648\u0639", icon: Trophy },
   { name: "\u0645\u0634\u0627\u0631\u0643 \u0646\u0634\u0637", icon: Award },
@@ -110,7 +172,7 @@ const Profile = () => {
     { name: "\u0627\u0644\u0644\u063A\u0629 \u0627\u0644\u0639\u0631\u0628\u064A\u0629", level: Math.min(Math.floor(points / 12), 100) },
     { name: "\u0627\u0644\u0643\u064A\u0645\u064A\u0627\u0621", level: Math.min(Math.floor(points / 18), 100) }
   ];
-  return <div className="max-w-3xl mx-auto space-y-6"><motion.div
+  return <div className="max-w-3xl mx-auto space-y-6"><ProfileSettings /><motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className="elevated-card rounded-2xl overflow-hidden border"

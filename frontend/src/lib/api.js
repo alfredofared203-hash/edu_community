@@ -10,6 +10,7 @@ export const api = {
   login:    (body) => request("/v1/auth/login",    { method: "POST", body: JSON.stringify(body) }).then(u),
   register: (body) => request("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }).then(u),
   getMe:    ()     => request("/v1/auth/me").then(u),
+  updateProfile: (formData) => request("/v1/auth/profile", { method: "PATCH", body: formData }).then(u),
   logout:   ()     => request("/v1/auth/logout", { method: "POST" }).catch(() => null),
 
   // ===== Subjects =====
@@ -40,6 +41,8 @@ export const api = {
 
   // ===== Teachers =====
   getTeachers:  ()                    => request("/teachers").then(u),
+  getLessons:   ()                    => request("/lessons").then(u),
+  createLesson: (body)                => request("/lessons", { method: "POST", body: JSON.stringify(body) }).then(u),
   rateTeacher:  (id, rating, comment) => request(`/teachers/${id}/rate`, { method: "POST", body: JSON.stringify({ rating, comment }) }).then(u),
 
   // ===== Admin =====
@@ -48,7 +51,7 @@ export const api = {
   deleteUser:    (id) => request(`/admin/users/${id}`, { method: "DELETE" }).then(u),
 
   // ===== Chat =====
-  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`).then(u),
+  getRoomMessages: (room, params = {}) => request(`/v1/chat/messages${qs({ room, ...params })}`).then(u),
 
   // ===== Rewards =====
   getRewards:          ()                 => request("/v1/rewards").then(u),

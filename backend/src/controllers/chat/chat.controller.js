@@ -2,15 +2,15 @@ const { getMessages } = require('../../services/chat/chat.service');
 
 
 async function getMessageHistory(req, res) {
-  const { grade, page = 1, limit = 20 } = req.query;
+  const { room, page = 1, limit = 20 } = req.query;
 
-  if (!grade) {
+  if (!room) {
     return res.status(400).json({ error: 'يجب تحديد الصف الدراسي' });
   }
 
   try {
     const result = await getMessages({
-      grade,
+      grade: room,
       page: parseInt(page),
       limit: parseInt(limit),
     });

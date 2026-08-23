@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authenticate } = require('../middleware/auth.middleware');
+const upload = require('../middleware/upload.middleware');
 const { getJwtSecret, getRefreshSecret } = require('../config/auth');
 
 const router = express.Router();
@@ -112,6 +113,42 @@ router.get('/me', authenticate, async (req, res) => {
   const user = await User.findById(req.user.id);
   if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
   res.json({ user });
+});
+
+router.patch('/profile', authenticate, upload.single('avatar'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+    const { name, schoolCode, grade, nationalId, subject, avatarPosition, theme, language } = req.body;
+    if (typeof name === 'string' && name.trim()) user.name = name.trim();
+    if (typeof avatarPosition !== 'undefined') user.avatarPosition = Math.max(0, Math.min(100, Number(avatarPosition) || 50));
+    if (req.file) user.avatarUrl = `/uploads/${req.file.filename}`;
+
+    const roleSettings = user.roleSettings?.toObject?.() || user.roleSettings || {};
+    if (user.role === 'student') {
+      user.grade = grade ?? user.grade;
+      user.schoolCode = schoolCode ?? user.schoolCode;
+      user.nationalId = nationalId ?? user.nationalId;
+      roleSettings.student = { grade: user.grade, schoolCode: user.schoolCode, nationalId: user.nationalId };
+    } else if (user.role === 'teacher') {
+      user.schoolCode = schoolCode ?? user.schoolCode;
+      roleSettings.teacher = { subject: subject ?? '', schoolCode: user.schoolCode };
+    } else if (user.role === 'admin') {
+      user.schoolCode = schoolCode ?? user.schoolCode;
+      roleSettings.admin = { schoolCode: user.schoolCode };
+    }
+    user.roleSettings = roleSettings;
+    user.preferences = {
+      ...(user.preferences?.toObject?.() || user.preferences || {}),
+      ...(theme === 'dark' || theme === 'light' ? { theme } : {}),
+      ...(language === 'ar' || language === 'en' ? { language } : {}),
+    };
+    await user.save();
+    res.json({ user });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'تعذر حفظ إعدادات الملف الشخصي' });
+  }
 });
 
 module.exports = router;

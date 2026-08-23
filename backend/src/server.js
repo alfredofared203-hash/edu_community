@@ -10,6 +10,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const connectDB = require('./config/db');
 const initSocket = require('./config/socket');
 const { validateAuthConfig } = require('./config/auth');
+const setupSwagger = require('./config/swagger');
 
 validateAuthConfig();
 connectDB();
@@ -34,6 +35,7 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(globalLimiter);
+setupSwagger(app);
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -47,6 +49,8 @@ app.use('/api/materials', require('./routes/materials'));
 app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/challenges', require('./routes/challenge.routes'));
 app.use('/api/leaderboard', require('./routes/leaderboard.routes'));
+app.use('/api/teachers', require('./routes/teacher.routes'));
+app.use('/api/lessons', require('./routes/lesson.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
 // V1 API

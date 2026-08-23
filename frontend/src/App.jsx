@@ -19,6 +19,7 @@ import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
+import { AppSettingsProvider } from "./context/AppSettingsContext";
 import { SocketProvider } from "./context/SocketContext";
 import RoleHome from "./components/RoleHome";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -31,7 +32,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <SocketProvider>
+        <AppSettingsProvider>
+          <SocketProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -85,8 +87,6 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-
-              <Route path="/softskills" element={<ProtectedRoute roles={["student"]}><AppLayout><SoftSkillsPage /></AppLayout></ProtectedRoute>} />
 
               <Route
                 path="/materials"
@@ -157,7 +157,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </SocketProvider>
+          </SocketProvider>
+        </AppSettingsProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
