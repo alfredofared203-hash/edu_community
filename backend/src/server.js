@@ -18,26 +18,23 @@ const v1Routes = require('./routes/v1');
 const postRoutes = require('./routes/post.routes');
 const challengeRoutes = require('./routes/challenge.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
-const adminRoutes = require('./routes/admin.routes'); // 👈 تم حذف استدعاء teacherRoutes من هنا
+const adminRoutes = require('./routes/admin.routes');  
 
 connectDB();
 
 const app = express();
 
-// أمان وأساسيات
-app.use(helmet());
+ app.use(helmet());
 app.use(cors({ origin: env.nodeEnv === 'production' ? env.clientUrl : true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 if (env.nodeEnv !== 'test') app.use(morgan('dev'));
 
-// حد عام للطلبات لكل IP
-app.use(
+ app.use(
   rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false })
 );
 
-// ملفات الرفع المحلية
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // فحص صحة الخدمة
 app.get('/api/health', (req, res) =>
