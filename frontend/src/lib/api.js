@@ -1,118 +1,72 @@
-﻿const BASE_URL = "http://localhost:5000/api";
-const ACCESS_KEY = "accessToken";
-const REFRESH_KEY = "refreshToken";
+import { request, qs, tokenStore } from "./apiClient";
 
-const tokenStore = {
-  getAccess: () => localStorage.getItem(ACCESS_KEY),
-  getRefresh: () => localStorage.getItem(REFRESH_KEY),
-  set: (access, refresh) => {
-    if (access) localStorage.setItem(ACCESS_KEY, access);
-    if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
-  },
-  clear: () => {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-  },
+export { tokenStore };
+
+// الباك بيرجع { success, message, data } — بنطلع الـ data مباشرة
+const u = (res) => res?.data ?? res;
+
+export const api = {
+  // ===== Auth =====
+  login:    (body) => request("/v1/auth/login",    { method: "POST", body: JSON.stringify(body) }).then(u),
+  register: (body) => request("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }).then(u),
+  getMe:    ()     => request("/v1/auth/me").then(u),
+  logout:   ()     => request("/v1/auth/logout", { method: "POST" }).catch(() => null),
+
+  // ===== Subjects =====
+  getSubjects:   (grade) => request(`/v1/subjects${qs({ grade })}`).then(u),
+  createSubject: (body)  => request("/v1/subjects", { method: "POST", body: JSON.stringify(body) }).then(u),
+
+  // ===== Materials =====
+  getMaterials:   (params = {}) => request(`/v1/materials${qs(params)}`).then(u),
+  getMaterial:    (id)          => request(`/v1/materials/${id}`).then(u),
+  createMaterial: (formData)    => request("/v1/materials", { method: "POST", body: formData }).then(u),
+  deleteMaterial: (id)          => request(`/v1/materials/${id}`, { method: "DELETE" }).then(u),
+
+  // ===== Posts =====
+  getPosts:      ()            => request("/posts").then(u),
+  createPost:    (formData)    => request("/posts", { method: "POST", body: formData }).then(u),
+  likePost:      (id)          => request(`/posts/${id}/like`, { method: "POST" }).then(u),
+  getComments:   (id)          => request(`/posts/${id}/comments`).then(u),
+  createComment: (id, content) => request(`/posts/${id}/comments`, { method: "POST", body: JSON.stringify({ content }) }).then(u),
+
+  // ===== Challenges =====
+  getChallenges:      ()           => request("/v1/challenges").then(u),
+  getMySubmissions:   ()           => request("/v1/challenges/my-submissions").then(u),
+  submitChallenge:    (id, answer) => request(`/v1/challenges/${id}/submit`, { method: "POST", body: JSON.stringify({ answer }) }).then(u),
+
+  // ===== Leaderboard =====
+  getLeaderboard: (grade) => request(`/leaderboard${qs({ grade })}`).then(u),
+  getSchools:     ()      => request("/leaderboard/schools").then(u),
+
+  // ===== Teachers =====
+  getTeachers:  ()                    => request("/teachers").then(u),
+  rateTeacher:  (id, rating, comment) => request(`/teachers/${id}/rate`, { method: "POST", body: JSON.stringify({ rating, comment }) }).then(u),
+
+  // ===== Admin =====
+  getAdminStats: () => request("/admin/stats").then(u),
+  getAdminUsers: () => request("/admin/users").then(u),
+  deleteUser:    (id) => request(`/admin/users/${id}`, { method: "DELETE" }).then(u),
+
+  // ===== Chat =====
+  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`).then(u),
+
+  // ===== Rewards =====
+  getRewards:          ()                 => request("/v1/rewards").then(u),
+  getMyRewards:        ()                 => request("/v1/rewards/me").then(u),
+  getUsersWithRewards: ()                 => request("/v1/rewards/users").then(u),
+  createReward:        (data)             => request("/v1/rewards", { method: "POST", body: JSON.stringify(data) }).then(u),
+  deleteReward:        (id)               => request(`/v1/rewards/${id}`, { method: "DELETE" }).then(u),
+  grantReward:         (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "POST" }).then(u),
+  revokeReward:        (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "DELETE" }).then(u),
+
+  // ===== Soft Skills =====
+  getSoftSkills:           ()            => request("/v1/softskills").then(u),
+  getSoftSkillSubmissions: (skillId)     => request(`/v1/softskills/${skillId}/submissions`).then(u),
+  submitPresentation:      (skillId, fd) => request(`/v1/softskills/${skillId}/submit`, { method: "POST", body: fd }).then(u),
+  gradeSubmission:         (id, data)    => request(`/v1/softskills/submissions/${id}/grade`, { method: "POST", body: JSON.stringify(data) }).then(u),
+
+  // ===== Notifications =====
+  getNotifications:         ()   => request("/v1/notifications").then(u),
+  markNotificationRead:     (id) => request(`/v1/notifications/${id}/read`, { method: "PATCH" }).then(u),
+  markAllNotificationsRead: ()   => request("/v1/notifications/read-all", { method: "PATCH" }).then(u),
 };
-
-const NO_REFRESH = ["/auth/login", "/auth/register", "/auth/refresh"];
-
-async function tryRefresh() {
-  const refreshToken = tokenStore.getRefresh();
-  if (!refreshToken) return false;
-
-  try {
-    const res = await fetch(`${BASE_URL}/v1/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    if (!res.ok) return false;
-
-    const json = await res.json();
-    const newAccess = json?.data?.accessToken;
-    const newRefresh = json?.data?.refreshToken;
-
-    if (!newAccess) return false;
-    tokenStore.set(newAccess, newRefresh);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function request(endpoint, options = {}, isRetry = false) {
-  const token = options.token ?? tokenStore.getAccess();
-  const headers = new Headers(options.headers || {});
-
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (!(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
-
-  const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
-
-  if (response.status === 401 && !isRetry && !NO_REFRESH.some((p) => endpoint.includes(p))) {
-    const refreshed = await tryRefresh();
-    if (refreshed) return request(endpoint, options, true);
-  }
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || data.error || "حدث خطأ ما");
-  }
-
-  if (data && typeof data === "object" && "success" in data && "data" in data) {
-    return data.data;
-  }
-
-  return data;
-}
-
-const qs = (params = {}) => {
-  const clean = Object.fromEntries(
-    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
-  );
-  const s = new URLSearchParams(clean).toString();
-  return s ? `?${s}` : "";
-};
-
-const api = {
-  login: (body) => request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  register: (body) => request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  logout: () => request("/auth/logout", { method: "POST" }),
-  getMe: () => request("/auth/me"),
-
-  getSubjects: (grade) => request("/subjects" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  createSubject: (body) => request("/subjects", { method: "POST", body: JSON.stringify(body) }),
-
-  getMaterials: (params = {}) => request("/materials" + qs(params)),
-  getMaterial: (id) => request("/materials/" + id),
-  createMaterial: (formData) => request("/materials", { method: "POST", body: formData }),
-  deleteMaterial: (id) => request("/materials/" + id, { method: "DELETE" }),
-
-  getPosts: () => request("/posts"),
-  createPost: (formData) => request("/posts", { method: "POST", body: formData }),
-  likePost: (id) => request("/posts/" + id + "/like", { method: "POST" }),
-  getComments: (id) => request("/posts/" + id + "/comments"),
-  createComment: (id, content) => request("/posts/" + id + "/comments", { method: "POST", body: JSON.stringify({ content }) }),
-
-  getChallenges: () => request("/challenges"),
-  getSubmissions: () => request("/challenges/submissions"),
-  submitChallenge: (id, answer) => request("/challenges/" + id + "/submit", { method: "POST", body: JSON.stringify({ answer }) }),
-
-  getLeaderboard: (grade) => request("/leaderboard" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  getSchools: () => request("/leaderboard/schools"),
-
-  getTeachers: () => request("/teachers"),
-  rateTeacher: (id, rating, comment) => request("/teachers/" + id + "/rate", { method: "POST", body: JSON.stringify({ rating, comment }) }),
-
-  getAdminStats: () => request("/admin/stats"),
-  getAdminUsers: () => request("/admin/users"),
-  deleteUser: (userId) => request(`/admin/users/${userId}`, { method: "DELETE" }),
-
-  getChatRooms: () => request("/v1/chat/rooms"),
-  getRoomMessages: (room, params = {}) => request(`/v1/chat/${encodeURIComponent(room)}/messages${qs(params)}`),
-};
-
-export { api, tokenStore };

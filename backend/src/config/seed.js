@@ -9,6 +9,8 @@ const TeacherRating = require('../models/TeacherRating');
 const Subject = require('../models/Subject');
 const Material = require('../models/Material');
 const bcrypt = require('bcryptjs');
+const SoftSkill = require('../models/SoftSkill');
+const Reward = require('../models/Reward');
 
 const teachersData = [
     { name: 'أ. أحمد علي', email: 'ahmed.ali@edu.eg', role: 'teacher', grade: 'كل المراحل' },
@@ -73,6 +75,8 @@ async function seed() {
         await TeacherRating.deleteMany({});
         await Subject.deleteMany({});
         await Material.deleteMany({});
+        await SoftSkill.deleteMany({});
+    await Reward.deleteMany({});
         console.log('Database collections cleared');
 
         // نشفّر كلمة المرور مرة واحدة ونستخدمها لكل الحسابات التجريبية (password123)
@@ -156,11 +160,13 @@ async function seed() {
         console.log(`${challenges.length} Challenges created`);
 
         // Create some students for leaderboard testing
+        // ملاحظة: نستخدم أكواد الصفوف (sec-1 ...) نفسها المستخدمة في المواد والشات
+        // عشان فلترة المواد وغرف الشات تشتغل مع الطلاب صح
         const studentsData = [
-            { name: 'عمر ياسر', email: 'omar@edu.eg', points: 850, grade: 'الصف الأول الثانوي', schoolCode: 'SCH-Cairo-1' },
-            { name: 'فاطمة أحمد', email: 'fatma@edu.eg', points: 920, grade: 'الصف الأول الثانوي', schoolCode: 'SCH-Cairo-1' },
-            { name: 'علي حسن', email: 'ali@edu.eg', points: 740, grade: 'الصف الأول الثانوي', schoolCode: 'SCH-Giza-2' },
-            { name: 'نور سليم', email: 'nour@edu.eg', points: 610, grade: 'الصف الثاني الثانوي', schoolCode: 'SCH-Alex-3' },
+            { name: 'عمر ياسر', email: 'omar@edu.eg', points: 850, grade: 'sec-1', schoolCode: 'SCH-Cairo-1' },
+            { name: 'فاطمة أحمد', email: 'fatma@edu.eg', points: 920, grade: 'sec-1', schoolCode: 'SCH-Cairo-1' },
+            { name: 'علي حسن', email: 'ali@edu.eg', points: 740, grade: 'sec-1', schoolCode: 'SCH-Giza-2' },
+            { name: 'نور سليم', email: 'nour@edu.eg', points: 610, grade: 'sec-2', schoolCode: 'SCH-Alex-3' },
         ];
 
         const students = await Promise.all(
@@ -199,6 +205,28 @@ async function seed() {
             content: 'أهلاً بك يا فاطمة، الانقسام الميتوزي ينتج خليتين متطابقتين تماماً للخلية الأم، بينما الميوزي ينتج 4 خلايا بكل منها نصف عدد الكروموسومات. سأقوم بنشر ملف ملخص كامل غداً!',
         });
         console.log('Initial comments seeded');
+
+        // Create Soft Skills (المهارات الناعمة)
+        await SoftSkill.insertMany([
+            { title: 'مهارات التواصل', description: 'فن إيصال الأفكار بوضوح وبناء جسور التفاهم مع الآخرين بفعالية.', icon: 'Users', color: 'blue', coursesCount: 12, createdBy: admin._id },
+            { title: 'القيادة الإيجابية', description: 'كيفية إلهام الفرق وتوجيه الطاقات نحو تحقيق الأهداف المشتركة برؤية واضحة.', icon: 'Award', color: 'emerald', coursesCount: 8, createdBy: admin._id },
+            { title: 'إدارة الوقت', description: 'تنظيم المهام وتحديد الأولويات لتحقيق أقصى إنتاجية بأقل جهد وتوتر.', icon: 'Clock', color: 'amber', coursesCount: 15, createdBy: admin._id },
+            { title: 'حل المشكلات', description: 'تطوير التفكير التحليلي والابتكاري لمواجهة التحديات بذكاء ومرونة.', icon: 'Lightbulb', color: 'indigo', coursesCount: 10, createdBy: admin._id },
+        ]);
+        console.log('Soft Skills seeded');
+
+        // Create Rewards
+        await Reward.insertMany([
+            { title: 'عبقري الرياضيات', description: 'تفوّق في تحديات الرياضيات', emoji: '🧮', cost: 0,    type: 'badge', requirement: 'مطلوب: حل 10 تحديات رياضيات', createdBy: admin._id },
+            { title: 'مشارك نشط',      description: 'ساهم بفاعلية في المجتمع',    emoji: '💬', cost: 0,    type: 'badge', requirement: 'مطلوب: 20 تعليقاً مفيداً',    createdBy: admin._id },
+            { title: 'الطائر المبكر',  description: 'دخول مبكر 5 أيام متتالية',   emoji: '⏰', cost: 0,    type: 'badge', requirement: 'مطلوب: دخول 5 أيام متتالية', createdBy: admin._id },
+            { title: 'المفكر الناقد',  description: 'تطوير مهارات التفكير النقدي', emoji: '🧠', cost: 0,    type: 'badge', requirement: 'مطلوب: 50 مشاركة',           createdBy: admin._id },
+            { title: 'مبتكر حلول',     description: 'الفوز بمسابقة ابتكار',        emoji: '💡', cost: 0,    type: 'badge', requirement: 'مطلوب: فوز بمسابقة',          createdBy: admin._id },
+            { title: 'ندوة حصرية مع خبراء',   description: 'وصول مباشر لندوة تفاعلية مع كبار المتخصصين.', emoji: '🎓', cost: 1500, type: 'store', createdBy: admin._id },
+            { title: 'إطار ملف شخصي مميز',    description: 'تميز بإطار متوهج وحصري لصورتك الشخصية.',      emoji: '✨', cost: 250,  type: 'store', createdBy: admin._id },
+            { title: 'شهادة رقمية معتمدة',    description: 'وثق مهاراتك بشهادة رقمية قابلة للمشاركة.',    emoji: '📜', cost: 500,  type: 'store', createdBy: admin._id },
+        ]);
+        console.log('Rewards seeded');
 
         console.log('Seeding successfully completed');
         process.exit(0);

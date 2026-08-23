@@ -24,7 +24,7 @@ const Challenges = () => {
       const chRes = await api.getChallenges();
       let subRes = { submissions: [] };
       if (user) {
-        subRes = await api.getSubmissions();
+        subRes = await api.getMySubmissions();
       }
       setChallenges(chRes.challenges);
       setSubmissions(subRes.submissions);
