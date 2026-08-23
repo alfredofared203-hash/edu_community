@@ -1,21 +1,46 @@
-# Database
-mongodb_data/
+# ==========================================
+# 1. Dependency Directories (مجلدات المكتبات)
+# ==========================================
+node_modules/
+**/node_modules/
 
-# Backend node_modules and env
-educommunity-backend/node_modules/
-educommunity-backend/.env
-educommunity-backend/uploads/
-educommunity-backend/*.log
+# ==========================================
+# 2. Environment Variables (ملفات البيئة الحساسة)
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
 
-# Frontend node_modules and build outputs
-educommunity-frontend/educommunity-frontend/node_modules/
-educommunity-frontend/educommunity-frontend/dist/
-educommunity-frontend/educommunity-frontend/.env
-educommunity-frontend/educommunity-frontend/*.log
+# ==========================================
+# 3. Production & Build Outputs (مخرجات الفرونت إند)
+# ==========================================
+dist/
+build/
+.next/
+out/
 
-# General IDE and OS files
-.vscode/
-.idea/
-.DS_Store
+# ==========================================
+# 4. Logs and Debugging (ملفات تسجيل الأخطاء)
+# ==========================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 *.log
+
+# ==========================================
+# 5. OS & IDE Files (ملفات النظام والأنظمة البرمجية)
+# ==========================================
+.DS_Store
 Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
