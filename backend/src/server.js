@@ -31,6 +31,7 @@ app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/challenges', require('./routes/challenge.routes'));
 app.use('/api/leaderboard', require('./routes/leaderboard.routes'));
 app.use('/api/teachers', require('./routes/teacher.routes'));
+app.use('/api/lessons', require('./routes/lesson.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
 app.use('/api/v1', require('./routes/v1'));

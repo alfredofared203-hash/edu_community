@@ -66,7 +66,7 @@ export function useChat(roomId) {
       const trimmed = (text || "").trim();
       if (!trimmed || !socket || !roomId) return;
       // الباك بيستقبل { grade, content }
-      socket.emit("send_message", { grade: roomId, content: trimmed });
+      socket.emit("send_message", { room: roomId, content: trimmed, kind: trimmed.startsWith("data:audio/") ? "audio" : "text" });
     },
     [socket, roomId]
   );
