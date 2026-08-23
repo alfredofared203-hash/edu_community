@@ -1,7 +1,3 @@
-// كلاس بسيط للأخطاء المتوقّعة.
-// بدل ما نكتب res.status(404).json(...) في كل مكان،
-// بنعمل: throw ApiError.notFound('المهارة غير موجودة')
-// والـ error middleware بيحوّلها لرد HTTP بالشكل الموحّد.
 class ApiError extends Error {
   constructor(statusCode, message) {
     super(message);
