@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // كل ردود الـAPI بتطلع بنفس الشكل الموحّد: { success, message, data, meta? }
 // كده الفرونت بيتعامل مع شكل واحد ثابت في كل الطلبات.
 
@@ -15,3 +16,13 @@ function sendError(res, statusCode = 500, message = 'حصل خطأ في السي
 }
 
 module.exports = { sendSuccess, sendError };
+=======
+// شكل رد موحّد لكل الـAPI الجديدة: { success, message, data, meta? }
+const sendSuccess = (res, { statusCode = 200, message = 'تم بنجاح', data = null, meta } = {}) => {
+  const body = { success: true, message, data };
+  if (meta) body.meta = meta;
+  return res.status(statusCode).json(body);
+};
+
+module.exports = { sendSuccess };
+>>>>>>> backend2

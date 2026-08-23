@@ -1,12 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { BookOpen, Upload, Users, Sparkles, CheckCircle2, Clock, ChevronLeft, AlertCircle, Video } from "lucide-react";
+=======
+import { BookOpen, Upload, Users, Sparkles, CheckCircle2, Clock, ChevronLeft, AlertCircle } from "lucide-react";
+>>>>>>> backend2
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { Card } from "@/components/ui/card";
+<<<<<<< HEAD
 import { GRADES } from "../lib/grades";
+=======
+>>>>>>> backend2
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -29,6 +36,7 @@ export default function TeacherDashboard() {
 
   // مهام تحتاج تصحيح (pending submissions)
   const pendingSkills = softSkills.filter((s) => s.pendingCount > 0);
+<<<<<<< HEAD
   const [lesson, setLesson] = useState({ title: "", description: "", grade: user?.grade || "sec-1", startsAt: "", meetingUrl: "" });
   const [publishing, setPublishing] = useState(false);
   const publishLesson = async (event) => {
@@ -37,6 +45,8 @@ export default function TeacherDashboard() {
     catch (error) { toast.error(error.message || "تعذر نشر الدرس"); }
     finally { setPublishing(false); }
   };
+=======
+>>>>>>> backend2
 
   return (
     <div dir="rtl" className="max-w-5xl mx-auto space-y-6">
@@ -67,6 +77,7 @@ export default function TeacherDashboard() {
 
         <div className="lg:col-span-2 space-y-6">
 
+<<<<<<< HEAD
           <Card className="p-5 space-y-3">
             <h3 className="font-bold text-slate-800 flex items-center gap-2"><Video className="w-5 h-5 text-emerald-600" /> طرح درس أونلاين</h3>
             <form onSubmit={publishLesson} className="grid sm:grid-cols-2 gap-3">
@@ -79,6 +90,8 @@ export default function TeacherDashboard() {
             </form>
           </Card>
 
+=======
+>>>>>>> backend2
           {/* موادي */}
           <Section title="موادي التعليمية" action={{ label: "رفع مادة جديدة", onClick: () => navigate("/materials") }}>
             {loading && <Skeleton rows={3} />}

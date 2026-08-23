@@ -19,7 +19,10 @@ import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
+<<<<<<< HEAD
 import { AppSettingsProvider } from "./context/AppSettingsContext";
+=======
+>>>>>>> backend2
 import { SocketProvider } from "./context/SocketContext";
 import RoleHome from "./components/RoleHome";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -32,8 +35,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+<<<<<<< HEAD
         <AppSettingsProvider>
           <SocketProvider>
+=======
+        <SocketProvider>
+>>>>>>> backend2
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -157,8 +164,12 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+<<<<<<< HEAD
           </SocketProvider>
         </AppSettingsProvider>
+=======
+        </SocketProvider>
+>>>>>>> backend2
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

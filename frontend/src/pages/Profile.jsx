@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
+=======
+import { useState, useEffect } from "react";
+>>>>>>> backend2
 import { motion } from "framer-motion";
 import {
   Trophy,
@@ -13,12 +17,16 @@ import {
   ShieldAlert,
   GraduationCap,
   School
+<<<<<<< HEAD
   ,Upload, Save, Sun, Moon, Languages
+=======
+>>>>>>> backend2
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { toast } from "sonner";
+<<<<<<< HEAD
 import { useAppSettings } from "../context/AppSettingsContext";
 import { GRADES, SUBJECTS } from "../lib/grades";
 
@@ -80,6 +88,8 @@ function ProfileSettings() {
     <button type="button" onClick={save} disabled={saving} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-60"><Save className="w-4 h-4 inline" /> {saving ? "جار الحفظ..." : "حفظ إعدادات الحساب"}</button>
   </motion.section>;
 }
+=======
+>>>>>>> backend2
 const defaultBadges = [
   { name: "\u0628\u0637\u0644 \u0627\u0644\u0623\u0633\u0628\u0648\u0639", icon: Trophy },
   { name: "\u0645\u0634\u0627\u0631\u0643 \u0646\u0634\u0637", icon: Award },
@@ -172,7 +182,11 @@ const Profile = () => {
     { name: "\u0627\u0644\u0644\u063A\u0629 \u0627\u0644\u0639\u0631\u0628\u064A\u0629", level: Math.min(Math.floor(points / 12), 100) },
     { name: "\u0627\u0644\u0643\u064A\u0645\u064A\u0627\u0621", level: Math.min(Math.floor(points / 18), 100) }
   ];
+<<<<<<< HEAD
   return <div className="max-w-3xl mx-auto space-y-6"><ProfileSettings /><motion.div
+=======
+  return <div className="max-w-3xl mx-auto space-y-6"><motion.div
+>>>>>>> backend2
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className="elevated-card rounded-2xl overflow-hidden border"

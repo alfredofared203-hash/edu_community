@@ -1,6 +1,7 @@
 const { saveMessage } = require('../services/chat/chat.service');
 
 
+<<<<<<< HEAD
 const roomName = (room) => `chat_${room}`;
 
 function canUseRoom(user, room) {
@@ -24,11 +25,40 @@ function registerChatHandlers(io, socket) {
       return socket.emit('error', { error: 'الغرفة والمحتوى مطلوبان' });
     }
     if (!canUseRoom(socket.user, room) || !socket.rooms.has(roomName(room))) {
+=======
+const roomName = (grade) => `grade_${grade}`;
+
+function registerChatHandlers(io, socket) {
+
+  socket.on('join_room', (grade) => {
+    const { role, grade: userGrade } = socket.user;
+
+    if (role === 'student' && userGrade !== grade) {
+      return socket.emit('error', { error: 'لا يمكنك الانضمام لغرفة صف آخر' });
+    }
+
+    socket.join(roomName(grade));
+    socket.emit('joined', { grade }); 
+  });
+
+  
+  socket.on('send_message', async ({ grade, content }) => {
+    if (!grade || !content?.trim()) {
+      return socket.emit('error', { error: 'الصف والمحتوى مطلوبان' });
+    }
+
+
+    if (!socket.rooms.has(roomName(grade))) {
+>>>>>>> backend2
       return socket.emit('error', { error: 'يجب الانضمام للغرفة أولاً' });
     }
 
     try {
+<<<<<<< HEAD
       const message = await saveMessage({ sender: socket.user.id, grade: room, content: content.trim(), kind });
+=======
+      const message = await saveMessage({ sender: socket.user.id, grade, content: content.trim() });
+>>>>>>> backend2
   
       io.to(roomName(grade)).emit('new_message', message.toJSON());
     } catch (e) {

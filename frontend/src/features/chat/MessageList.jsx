@@ -86,8 +86,12 @@ export default function MessageList({ messages, onLoadMore, hasMore, loading }) 
                       : "bg-card text-foreground rounded-br-sm"
                   }`}
                 >
+<<<<<<< HEAD
                   {text && m.kind !== "audio" && <p className="whitespace-pre-wrap">{text}</p>}
                   {m.kind === "audio" && <audio controls src={text} className="max-w-full" />}
+=======
+                  {text && <p className="whitespace-pre-wrap">{text}</p>}
+>>>>>>> backend2
                   {file && (
                     <a
                       href={file.url || "#"}

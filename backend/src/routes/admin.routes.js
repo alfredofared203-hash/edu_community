@@ -8,4 +8,8 @@ router.get('/stats', adminController.getSystemStats);
 router.get('/users', adminController.getUsers);
 router.delete('/users/:id', adminController.deleteUser);
 
+<<<<<<< HEAD
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> backend2

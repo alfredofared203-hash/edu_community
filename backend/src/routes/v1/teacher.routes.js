@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+// routes/teacherRoutes.js
+>>>>>>> backend2
 const express = require('express');
 const router = express.Router();
 const teacherController = require('../../controllers/teacherrating.controller');
@@ -11,4 +15,8 @@ router.post('/:id/rate',
   teacherController.rateTeacher
 );
 
+<<<<<<< HEAD
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> backend2

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 
+<<<<<<< HEAD
 // ===== فهرس الإصدار الأول من الـAPI (/api/v1) =====
 // المزايا الجديدة (المرحلة 3 وما بعدها) بتتركّب هنا بالمعمار الطبقي.
 
@@ -17,3 +18,18 @@ router.use('/recommendations', require('./recommendation.routes'));
 router.use('/analytics', require('./analytics.routes'));
 
 module.exports = router;
+=======
+router.use('/auth', require('./auth.routes'));
+
+router.use('/subjects', require('./subject.routes'));
+
+router.use('/materials', require('./material.routes'));
+
+router.use('/teachers', require('./teacher.routes'));
+
+router.use('/soft-skill-tasks', require('./softSkillTask.routes'));
+
+router.use('/submissions', require('./submission.routes'));
+
+module.exports = router;
+>>>>>>> backend2

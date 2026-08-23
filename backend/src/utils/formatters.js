@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+// utils/formatters.js
+
+>>>>>>> backend2
 exports.formatPost = (p, commentsCount = 0) => ({
     id: p._id,
     user_id: p.userId ? p.userId._id : null,
@@ -20,4 +25,8 @@ exports.formatComment = (c) => ({
     author_role: c.userId ? c.userId.role : 'student',
     content: c.content,
     created_at: c.createdAt,
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> backend2

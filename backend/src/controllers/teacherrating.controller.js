@@ -3,14 +3,23 @@ const TeacherRating = require('../models/TeacherRating');
 
 exports.getTeachers = async (req, res, next) => {
   try {
+<<<<<<< HEAD
     const minRatings = 3;
     const globalAverage = 4.0;
+=======
+    const minRatings = 3;     
+    const globalAverage = 4.0; 
+>>>>>>> backend2
 
     const teachers = await User.aggregate([
       { $match: { role: 'teacher' } },
       { 
         $lookup: { 
+<<<<<<< HEAD
           from: 'teacherratings',
+=======
+          from: 'teacherratings', 
+>>>>>>> backend2
           localField: '_id', 
           foreignField: 'teacherId', 
           as: 'ratings' 
@@ -65,6 +74,10 @@ exports.rateTeacher = async (req, res, next) => {
     const teacher = await User.findOne({ _id: req.params.id, role: 'teacher' });
     if (!teacher) return res.status(404).json({ error: 'the teacher does not exist' });
 
+<<<<<<< HEAD
+=======
+    // التحديث أو الإنشاء
+>>>>>>> backend2
     const ratingDoc = await TeacherRating.findOneAndUpdate(
       { teacherId: req.params.id, studentId: req.user.id },
       { rating, comment: comment || null },
@@ -77,4 +90,8 @@ exports.rateTeacher = async (req, res, next) => {
       data: ratingDoc 
     });
   } catch (e) { next(e); }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> backend2

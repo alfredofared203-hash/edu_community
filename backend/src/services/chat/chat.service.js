@@ -1,7 +1,12 @@
 const Message = require('../../models/Message');
 
+<<<<<<< HEAD
 async function saveMessage({ sender, grade, content, kind = 'text' }) {
   const msg = await Message.create({ sender, grade, content, kind });
+=======
+async function saveMessage({ sender, grade, content }) {
+  const msg = await Message.create({ sender, grade, content });
+>>>>>>> backend2
   return msg.populate('sender', 'name role');
 }
 

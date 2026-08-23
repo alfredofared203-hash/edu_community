@@ -1,4 +1,5 @@
 // features/chat/MessageInput.jsx
+<<<<<<< HEAD
 import { useRef, useState } from "react";
 import { Send, Paperclip, Smile, Mic, Square } from "lucide-react";
 
@@ -7,6 +8,13 @@ export default function MessageInput({ onSend, disabled }) {
   const [recording, setRecording] = useState(false);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
+=======
+import { useState } from "react";
+import { Send, Paperclip, Smile } from "lucide-react";
+
+export default function MessageInput({ onSend, disabled }) {
+  const [text, setText] = useState("");
+>>>>>>> backend2
 
   const submit = (e) => {
     e.preventDefault();
@@ -15,6 +23,7 @@ export default function MessageInput({ onSend, disabled }) {
     setText("");
   };
 
+<<<<<<< HEAD
   const toggleRecording = async () => {
     if (recording) { recorderRef.current?.stop(); return; }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -34,6 +43,8 @@ export default function MessageInput({ onSend, disabled }) {
     setRecording(true);
   };
 
+=======
+>>>>>>> backend2
   return (
     <form
       onSubmit={submit}
@@ -41,6 +52,7 @@ export default function MessageInput({ onSend, disabled }) {
     >
       <button
         type="button"
+<<<<<<< HEAD
         onClick={toggleRecording}
         disabled={disabled}
         className={`w-10 h-10 rounded-full flex items-center justify-center ${recording ? "bg-red-500 text-white" : "text-muted-foreground hover:bg-muted"}`}
@@ -48,6 +60,8 @@ export default function MessageInput({ onSend, disabled }) {
       >{recording ? <Square className="w-4 h-4" /> : <Mic className="w-5 h-5" />}</button>
       <button
         type="button"
+=======
+>>>>>>> backend2
         className="w-10 h-10 rounded-full text-muted-foreground hover:bg-muted flex items-center justify-center"
         title="إرفاق ملف"
       >

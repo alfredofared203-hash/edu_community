@@ -28,4 +28,8 @@ exports.deleteUser = async (req, res, next) => {
         await User.findByIdAndDelete(req.params.id);
         res.json({ ok: true });
     } catch (e) { next(e); }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> backend2

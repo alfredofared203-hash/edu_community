@@ -1,4 +1,5 @@
 node_modules/
+<<<<<<< HEAD
 dist/
 .env
 *.log
@@ -7,3 +8,20 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+=======
+
+# Build
+dist/
+
+# Environment
+.env
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+    # OSThumbs.db    .DS_Store
+>>>>>>> backend2

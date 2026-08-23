@@ -1,6 +1,10 @@
 import axios from "axios";
 
+<<<<<<< HEAD
 const BASE_URL = "http://localhost:5000/api";
+=======
+const BASE_URL = "http://localhost:3000/api";
+>>>>>>> backend2
 const ACCESS_KEY = "accessToken";
 const REFRESH_KEY = "refreshToken";
 

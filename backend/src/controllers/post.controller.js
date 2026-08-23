@@ -1,7 +1,15 @@
+<<<<<<< HEAD
+=======
+// controllers/post.controller.js
+>>>>>>> backend2
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const { formatPost, formatComment } = require('../utils/formatters');
 
+<<<<<<< HEAD
+=======
+// جلب جميع المنشورات
+>>>>>>> backend2
 exports.getPosts = async (req, res, next) => {
     try {
         const posts = await Post.find()
@@ -18,6 +26,10 @@ exports.getPosts = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+<<<<<<< HEAD
+=======
+// إنشاء منشور جديد
+>>>>>>> backend2
 exports.createPost = async (req, res, next) => {
     try {
         const postDoc = await Post.create({
@@ -32,6 +44,10 @@ exports.createPost = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+<<<<<<< HEAD
+=======
+// الإعجاب / إلغاء الإعجاب بمنشور
+>>>>>>> backend2
 exports.likePost = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -39,15 +55,25 @@ exports.likePost = async (req, res, next) => {
 
         const index = post.likes.indexOf(req.user.id);
         if (index > -1) {
+<<<<<<< HEAD
             post.likes.splice(index, 1);
         } else {
             post.likes.push(req.user.id);
+=======
+            post.likes.splice(index, 1); // Unlike
+        } else {
+            post.likes.push(req.user.id); // Like
+>>>>>>> backend2
         }
         await post.save();
         res.json({ ok: true, likes: post.likes.length, liked: index === -1 });
     } catch (e) { next(e); }
 };
 
+<<<<<<< HEAD
+=======
+// جلب التعليقات لمنشور معين
+>>>>>>> backend2
 exports.getComments = async (req, res, next) => {
     try {
         const comments = await Comment.find({ postId: req.params.id })
@@ -58,6 +84,10 @@ exports.getComments = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+<<<<<<< HEAD
+=======
+// إضافة تعليق على منشور
+>>>>>>> backend2
 exports.addComment = async (req, res, next) => {
     try {
         const { content } = req.body;
@@ -72,4 +102,8 @@ exports.addComment = async (req, res, next) => {
         const populated = await commentDoc.populate('userId', 'name role');
         res.status(201).json({ comment: formatComment(populated) });
     } catch (e) { next(e); }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> backend2

@@ -3,7 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authenticate } = require('../middleware/auth.middleware');
+<<<<<<< HEAD
 const upload = require('../middleware/upload.middleware');
+=======
+>>>>>>> backend2
 const { getJwtSecret, getRefreshSecret } = require('../config/auth');
 
 const router = express.Router();
@@ -115,6 +118,7 @@ router.get('/me', authenticate, async (req, res) => {
   res.json({ user });
 });
 
+<<<<<<< HEAD
 router.patch('/profile', authenticate, upload.single('avatar'), async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -151,4 +155,6 @@ router.patch('/profile', authenticate, upload.single('avatar'), async (req, res)
   }
 });
 
+=======
+>>>>>>> backend2
 module.exports = router;
