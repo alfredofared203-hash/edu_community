@@ -1,16 +1,9 @@
 node_modules/
-
-# Build
 dist/
-
-# Environment
 .env
-
-# Logs
 *.log
 
-# IDE
 .vscode/
 .idea/
-
-    # OSThumbs.db    .DS_Store
+.DS_Store
+Thumbs.db

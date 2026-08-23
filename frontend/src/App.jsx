@@ -86,6 +86,8 @@ const App = () => (
                 }
               />
 
+              <Route path="/softskills" element={<ProtectedRoute roles={["student"]}><AppLayout><SoftSkillsPage /></AppLayout></ProtectedRoute>} />
+
               <Route
                 path="/materials"
                 element={
