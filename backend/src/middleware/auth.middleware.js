@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const env = require('../config/env');
+const { getJwtSecret } = require('../config/auth');
 const ApiError = require('../utils/ApiError');
 
 
@@ -10,7 +10,7 @@ function authenticate(req, res, next) {
   }
   try {
     const token = header.split(' ')[1];          
-    req.user = jwt.verify(token, env.jwt.accessSecret);
+    req.user = jwt.verify(token, getJwtSecret());
     next();                                       
   } catch (e) {
     res.status(401).json({ error: 'توكن غير صالح أو منتهي' });
