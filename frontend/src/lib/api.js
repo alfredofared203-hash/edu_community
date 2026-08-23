@@ -1,59 +1,72 @@
 import { request, qs, tokenStore } from "./apiClient";
 
-const api = {
-  login: (body) => request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  register: (body) => request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  logout: () => request("/auth/logout", { method: "POST" }),
-  getMe: () => request("/auth/me"),
+export { tokenStore };
 
-  getSubjects: (grade) => request("/subjects" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  createSubject: (body) => request("/subjects", { method: "POST", body: JSON.stringify(body) }),
+// الباك بيرجع { success, message, data } — بنطلع الـ data مباشرة
+const u = (res) => res?.data ?? res;
 
-  getMaterials: (params = {}) => request("/materials" + qs(params)),
-  getMaterial: (id) => request("/materials/" + id),
-  createMaterial: (formData) => request("/materials", { method: "POST", body: formData }),
-  deleteMaterial: (id) => request("/materials/" + id, { method: "DELETE" }),
+export const api = {
+  // ===== Auth =====
+  login:    (body) => request("/v1/auth/login",    { method: "POST", body: JSON.stringify(body) }).then(u),
+  register: (body) => request("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }).then(u),
+  getMe:    ()     => request("/v1/auth/me").then(u),
+  logout:   ()     => request("/v1/auth/logout", { method: "POST" }).catch(() => null),
 
-  getPosts: () => request("/posts"),
-  createPost: (formData) => request("/posts", { method: "POST", body: formData }),
-  likePost: (id) => request("/posts/" + id + "/like", { method: "POST" }),
-  getComments: (id) => request("/posts/" + id + "/comments"),
-  createComment: (id, content) => request("/posts/" + id + "/comments", { method: "POST", body: JSON.stringify({ content }) }),
+  // ===== Subjects =====
+  getSubjects:   (grade) => request(`/v1/subjects${qs({ grade })}`).then(u),
+  createSubject: (body)  => request("/v1/subjects", { method: "POST", body: JSON.stringify(body) }).then(u),
 
-  getChallenges: () => request("/challenges"),
-  getSubmissions: () => request("/challenges/submissions"),
-  submitChallenge: (id, answer) => request("/challenges/" + id + "/submit", { method: "POST", body: JSON.stringify({ answer }) }),
+  // ===== Materials =====
+  getMaterials:   (params = {}) => request(`/v1/materials${qs(params)}`).then(u),
+  getMaterial:    (id)          => request(`/v1/materials/${id}`).then(u),
+  createMaterial: (formData)    => request("/v1/materials", { method: "POST", body: formData }).then(u),
+  deleteMaterial: (id)          => request(`/v1/materials/${id}`, { method: "DELETE" }).then(u),
 
-  getLeaderboard: (grade) => request("/leaderboard" + (grade ? "?grade=" + encodeURIComponent(grade) : "")),
-  getSchools: () => request("/leaderboard/schools"),
+  // ===== Posts =====
+  getPosts:      ()            => request("/posts").then(u),
+  createPost:    (formData)    => request("/posts", { method: "POST", body: formData }).then(u),
+  likePost:      (id)          => request(`/posts/${id}/like`, { method: "POST" }).then(u),
+  getComments:   (id)          => request(`/posts/${id}/comments`).then(u),
+  createComment: (id, content) => request(`/posts/${id}/comments`, { method: "POST", body: JSON.stringify({ content }) }).then(u),
 
-  getTeachers: () => request("/teachers"),
-  rateTeacher: (id, rating, comment) => request("/teachers/" + id + "/rate", { method: "POST", body: JSON.stringify({ rating, comment }) }),
+  // ===== Challenges =====
+  getChallenges:      ()           => request("/v1/challenges").then(u),
+  getMySubmissions:   ()           => request("/v1/challenges/my-submissions").then(u),
+  submitChallenge:    (id, answer) => request(`/v1/challenges/${id}/submit`, { method: "POST", body: JSON.stringify({ answer }) }).then(u),
 
-  getAdminStats: () => request("/admin/stats"),
-  getAdminUsers: () => request("/admin/users"),
-  deleteUser: (userId) => request(`/admin/users/${userId}`, { method: "DELETE" }),
+  // ===== Leaderboard =====
+  getLeaderboard: (grade) => request(`/leaderboard${qs({ grade })}`).then(u),
+  getSchools:     ()      => request("/leaderboard/schools").then(u),
 
-  // ===== الشات (سجل الرسائل — اللحظي عبر Socket) =====
-  // الغرفة = الصف الدراسي (grade). الباك عنده GET /v1/chat/messages?grade=&page=&limit=
-  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`),
+  // ===== Teachers =====
+  getTeachers:  ()                    => request("/teachers").then(u),
+  rateTeacher:  (id, rating, comment) => request(`/teachers/${id}/rate`, { method: "POST", body: JSON.stringify({ rating, comment }) }).then(u),
 
-  // ===== Soft Skills (v1) =====
-  getSoftSkills: () => request("/v1/softskills"),
-  getSoftSkillSubmissions: (skillId) => request(`/v1/softskills/${skillId}/submissions`),
-  submitPresentation: (skillId, formData) => request(`/v1/softskills/${skillId}/submit`, { method: "POST", body: formData }),
-  gradeSubmission: (submissionId, data) => request(`/v1/softskills/submissions/${submissionId}/grade`, { method: "POST", body: JSON.stringify(data) }),
+  // ===== Admin =====
+  getAdminStats: () => request("/admin/stats").then(u),
+  getAdminUsers: () => request("/admin/users").then(u),
+  deleteUser:    (id) => request(`/admin/users/${id}`, { method: "DELETE" }).then(u),
 
-  // ===== الإشعارات (v1) =====
-  getNotifications: () => request("/v1/notifications"),
-  markNotificationRead: (id) => request(`/v1/notifications/${id}/read`, { method: "PATCH" }),
-  markAllNotificationsRead: () => request("/v1/notifications/read-all", { method: "PATCH" }),
+  // ===== Chat =====
+  getRoomMessages: (grade, params = {}) => request(`/v1/chat/messages${qs({ grade, ...params })}`).then(u),
 
-  // ===== ترشيح المدرسين (v1) =====
-  getRecommendedTeachers: (limit = 10) => request(`/v1/recommendations/teachers${qs({ limit })}`),
-};
+  // ===== Rewards =====
+  getRewards:          ()                 => request("/v1/rewards").then(u),
+  getMyRewards:        ()                 => request("/v1/rewards/me").then(u),
+  getUsersWithRewards: ()                 => request("/v1/rewards/users").then(u),
+  createReward:        (data)             => request("/v1/rewards", { method: "POST", body: JSON.stringify(data) }).then(u),
+  deleteReward:        (id)               => request(`/v1/rewards/${id}`, { method: "DELETE" }).then(u),
+  grantReward:         (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "POST" }).then(u),
+  revokeReward:        (userId, rewardId) => request(`/v1/rewards/${userId}/${rewardId}`, { method: "DELETE" }).then(u),
 
-export {
-  api,
-  tokenStore
+  // ===== Soft Skills =====
+  getSoftSkills:           ()            => request("/v1/softskills").then(u),
+  getSoftSkillSubmissions: (skillId)     => request(`/v1/softskills/${skillId}/submissions`).then(u),
+  submitPresentation:      (skillId, fd) => request(`/v1/softskills/${skillId}/submit`, { method: "POST", body: fd }).then(u),
+  gradeSubmission:         (id, data)    => request(`/v1/softskills/submissions/${id}/grade`, { method: "POST", body: JSON.stringify(data) }).then(u),
+
+  // ===== Notifications =====
+  getNotifications:         ()   => request("/v1/notifications").then(u),
+  markNotificationRead:     (id) => request(`/v1/notifications/${id}/read`, { method: "PATCH" }).then(u),
+  markAllNotificationsRead: ()   => request("/v1/notifications/read-all", { method: "PATCH" }).then(u),
 };

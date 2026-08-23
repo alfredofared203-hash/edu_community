@@ -14,7 +14,8 @@ import {
   GraduationCap,
   LogOut,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Gift
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 const AppLayout = ({ children }) => {
@@ -33,7 +34,11 @@ const AppLayout = ({ children }) => {
     { path: "/teachers", label: "\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u0639\u0644\u0645\u064A\u0646", icon: Star },
     { path: "/soft-skills", label: "\u0627\u0644\u0645\u0647\u0627\u0631\u0627\u062A \u0627\u0644\u0646\u0627\u0639\u0645\u0629", icon: Sparkles },
     { path: "/profile", label: "\u0645\u0644\u0641\u064A \u0627\u0644\u0634\u062E\u0635\u064A", icon: User },
-    ...user?.role === "admin" ? [{ path: "/admin", label: "\u0644\u0648\u062D\u0629 \u0627\u0644\u062A\u062D\u0643\u0645", icon: Shield }] : []
+    ...user?.role === "student" ? [{ path: "/rewards", label: "مكافآتي", icon: Gift }] : [],
+    ...user?.role === "admin" ? [
+      { path: "/admin", label: "لوحة التحكم", icon: Shield },
+      { path: "/admin/rewards", label: "إدارة المكافآت", icon: Gift }
+    ] : []
   ];
   const getRoleLabel = (role) => {
     switch (role) {
